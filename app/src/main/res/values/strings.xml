@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CustomAnimationViews</string>
+
+    <string name="project_description">Custom views which implement their own layout procedure. These include both single views and layouts.</string>
+
+    <string name="empty"></string>
+    <string name="err_no_implementation">Implementation not found</string>
+</resources>
