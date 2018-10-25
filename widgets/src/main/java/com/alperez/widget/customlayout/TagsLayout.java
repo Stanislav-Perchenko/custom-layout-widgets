@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -118,6 +119,39 @@ public class TagsLayout extends FrameLayout {
     private final List<TagItemView> mTagItemViews = new LinkedList<>();
 
 
+    @Override
+    public void setPadding(int left, int top, int right, int bottom) {
+        super.setPadding(left, top, right, bottom);
+    }
+
+    public void setUseExtraSpace(boolean useExtSpace) {
+        if (attrUseExtraSpace != useExtSpace) {
+            attrUseExtraSpace = useExtSpace;
+            invalidate();
+            requestLayout();
+        }
+    }
+
+    public void setUseAutoReorder(boolean useReorder) {
+        if (attrAutoReorderItems != useReorder) {
+            attrAutoReorderItems = useReorder;
+            invalidate();
+            requestLayout();
+        }
+    }
+
+    public void setItemsHorizontalLayoutGravity(int grav) {
+        if (attrItemsHorizontalGravity != grav) {
+            attrItemsHorizontalGravity = grav;
+            if ((grav == Gravity.LEFT) || (grav == Gravity.CENTER_HORIZONTAL) || (grav == Gravity.RIGHT)) {
+                invalidate();
+                requestLayout();
+            } else {
+                throw new IllegalArgumentException("Wrong gravity - "+grav);
+            }
+        }
+    }
+
 
     public void setTags(ColoredCharSequence... tags) {
         if (mData.size() == tags.length) {
@@ -193,8 +227,8 @@ public class TagsLayout extends FrameLayout {
 
     @Override
     public void requestLayout() {
-        isLayoutInvalid = true;
         isMeasurementInvalid = true;
+        isLayoutInvalid = true;
         super.requestLayout();
     }
 
@@ -210,7 +244,7 @@ public class TagsLayout extends FrameLayout {
             tv.setMaxLines(1);
             tv.setEllipsize(TextUtils.TruncateAt.END);
             tv.setTextColor(attrTextColor);
-            tv.setTextSize(attrTextSize);
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, attrTextSize);
             tv.setTypeface(tv.getTypeface(), attrTextStyle);
             if (attrItemBackground != null) {
                 tv.setBackground(attrItemBackground.getConstantState().newDrawable().mutate());
@@ -251,9 +285,9 @@ public class TagsLayout extends FrameLayout {
             if ((this.data == null) || !this.data.equals(data)) {
                 textView.setText(this.data = data);
                 if (attrUseDataItemsColor && data.hasColor()) {
-                    setTextItemColor(textView, data.color());
+                    setTextItemColor(mainView, data.color());
                 }
-                isMeasured = false;
+                invalidateMeasure();
             }
         }
 
@@ -265,17 +299,18 @@ public class TagsLayout extends FrameLayout {
         }
 
         void invalidateMeasure() {
+            textView.forceLayout();
+            mainView.forceLayout();
             isMeasured = false;
+            measuredW = 0;
+            measuredH = 0;
         }
     }
 
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        if (w != oldw) {
-            lastMeasuredContentWidth = -1;
-            for (TagItemView tiv : mTagItemViews) tiv.invalidateMeasure();
-        }
+        isLayoutInvalid = true;
     }
 
 
@@ -297,9 +332,10 @@ public class TagsLayout extends FrameLayout {
 
         if (isMeasurementInvalid || (lastMeasuredContentWidth != contentW)) {
             isMeasurementInvalid = false;
-            lastMeasuredContentWidth = contentW;
+            lastMeasuredContentWidth = containerW;
 
-            int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(contentW, View.MeasureSpec.AT_MOST);
+            //int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(contentW, View.MeasureSpec.AT_MOST);
+            int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
             int childHeightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 
             //Step 1: measure all children independently
@@ -371,14 +407,19 @@ public class TagsLayout extends FrameLayout {
         return rm;
     }
 
-    private RowModel getRowWithReorder(List<TagItemView> input, int parentW, Deque<RowModel> convertRows) {
-        RowModel row = convertRows.isEmpty() ? new RowModel() : convertRows.pop();
-        row.rowItems.clear();
-        row.rowHeight = 0;
 
+    private TagItemView[] reorderWorkArray = new TagItemView[16];
+
+    private RowModel getRowWithReorder(List<TagItemView> input, int parentW, Deque<RowModel> convertRows) {
 
         final int lengthEarlyThreshold = (int) Math.round(0.95 * parentW);
         final int N = input.size();
+
+        if (reorderWorkArray.length < N) {
+            reorderWorkArray = new TagItemView[2*reorderWorkArray.length];
+        }
+        int index = 0;
+        for (TagItemView tiv : input) reorderWorkArray[index ++] = tiv;
 
         int storedWidthVariant = 0;
         int storedNSelected = 0;
@@ -402,7 +443,7 @@ public class TagsLayout extends FrameLayout {
             // Calculate total length
             int widthVariant = -attrMinItemToItemDistance;
             for (int i=0; i<nSelected; i++) {
-                widthVariant += (attrMinItemToItemDistance + input.get(workIndexes[i]).measuredW);
+                widthVariant += (attrMinItemToItemDistance + reorderWorkArray[workIndexes[i]].measuredW);
             }
             if (widthVariant > parentW) {
                 continue;
@@ -421,10 +462,23 @@ public class TagsLayout extends FrameLayout {
         }
 
         // Create and add new row
+        RowModel row = convertRows.isEmpty() ? new RowModel() : convertRows.pop();
+        row.rowItems.clear();
+        row.rowHeight = 0;
         for (int i=0; i<storedNSelected; i++) {
             int selIndex = storedIndexes[i];
-            row.rowItems.add(input.remove(selIndex));
+            TagItemView tiv = reorderWorkArray[selIndex];
+            row.rowItems.add(tiv);
+            if (row.rowHeight < tiv.measuredH) row.rowHeight = tiv.measuredH;
+            reorderWorkArray[selIndex] = null;
         }
+
+        // Update what's left
+        input.clear();
+        for (int i=0; i<N; i++) {
+            if (reorderWorkArray[i] != null) input.add(reorderWorkArray[i]);
+        }
+
         return row;
     }
 
@@ -438,10 +492,12 @@ public class TagsLayout extends FrameLayout {
         if (changed || isLayoutInvalid) {
             isLayoutInvalid = false;
             int rowTop = getPaddingTop();
-            final int maxBottom = bottom - getPaddingBottom();
+            final int maxBottom = bottom - top - getPaddingBottom();
+            final int rowStart = getPaddingLeft();
+            final int rowEnd = right - left - getPaddingRight();
             for (RowModel row : mMeasuredRows) {
                 if ((rowTop + row.rowHeight) <= maxBottom) {
-                    layoutRow(row, left+getPaddingLeft(), rowTop, right - getPaddingRight());
+                    layoutRow(row, rowStart, rowTop, rowEnd);
                 } else {
                     for (TagItemView tiv : row.rowItems) tiv.mainView.setTag(tiv.isLaidOut = false);
                 }
@@ -455,18 +511,13 @@ public class TagsLayout extends FrameLayout {
         int totContentW = 0;
         for (TagItemView tiv : row.rowItems) totContentW += tiv.measuredW;
 
+        int finItemSpace = attrMinItemToItemDistance;
         if (attrUseExtraSpace && (nChildren > 1)) {
-            int finItemSpace = Math.max(Math.round((float)(right - left - totContentW) / (nChildren - 1)), 0);
+            finItemSpace = Math.max(Math.round((float)(right - left - totContentW) / (nChildren - 1)), 0);
 
-            for (TagItemView tiv : row.rowItems) {
-                tiv.mainView.layout(left, top, left + tiv.measuredW, top + tiv.measuredH);
-                tiv.mainView.setTag(true);
-                tiv.isLaidOut = true;
-                left += finItemSpace;
-            }
         } else if (attrItemsHorizontalGravity == Gravity.LEFT) {
             //Do nothing here - start from the original 'left'
-
+            finItemSpace = attrMinItemToItemDistance;
 
         } else if (attrItemsHorizontalGravity == Gravity.RIGHT) {
             //Define left start position for the RIGHT gravity
@@ -483,8 +534,9 @@ public class TagsLayout extends FrameLayout {
             tiv.mainView.layout(left, top, left + tiv.measuredW, top + tiv.measuredH);
             tiv.mainView.setTag(true);
             tiv.isLaidOut = true;
-            left += attrMinItemToItemDistance;
+            left += (tiv.measuredW + finItemSpace);
         }
+
     }
 
 
@@ -512,16 +564,16 @@ public class TagsLayout extends FrameLayout {
     }
 
     /**********************************************************************************************/
-    private  static void setTextItemColor(TextView tv, int color) {
-        Drawable bg = tv.getBackground();
+    private  static void setTextItemColor(View v, int color) {
+        Drawable bg = v.getBackground();
         if (bg == null) {
-            tv.setBackground(new ColorDrawable(color));
+            v.setBackground(new ColorDrawable(color));
         } else if (bg instanceof ColorDrawable) {
             ((ColorDrawable) bg.mutate()).setColor(color);
         } else if (bg instanceof GradientDrawable) {
             ((GradientDrawable) bg.mutate()).setColor(color);
-        } else {
-            tv.setTextColor(color);
+        } else if (v instanceof TextView) {
+            ((TextView) v).setTextColor(color);
         }
     }
 }

@@ -30,7 +30,8 @@
                 android:layout_gravity="center_horizontal"
                 android:textColor="#858585"
                 android:text="Gravity"/>
-            <RadioGroup
+
+            <RadioGroup android:id="@+id/gravity_checker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -106,6 +107,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:gravity="left"
                 app:tl_item_distance="8dp"
                 app:tl_useExtraSpace="false"
                 app:tl_autoReorder="false"
@@ -132,6 +134,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:gravity="left"
                 app:tl_item_distance="8dp"
                 app:tl_useExtraSpace="false"
                 app:tl_autoReorder="false"
