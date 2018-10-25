@@ -3,6 +3,7 @@ package com.alperez.widget.customlayout;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -231,6 +232,7 @@ public class TagsLayout extends FrameLayout {
         ColoredCharSequence data;
         boolean isMeasured;
         int measuredW, measuredH;
+        private boolean isLaidOut;
 
         public TagItemView(View mainView, TextView textView) {
             if (mainView == null) {
@@ -433,7 +435,80 @@ public class TagsLayout extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        //TODO Implement this
+        if (changed || isLayoutInvalid) {
+            isLayoutInvalid = false;
+            int rowTop = getPaddingTop();
+            final int maxBottom = bottom - getPaddingBottom();
+            for (RowModel row : mMeasuredRows) {
+                if ((rowTop + row.rowHeight) <= maxBottom) {
+                    layoutRow(row, left+getPaddingLeft(), rowTop, right - getPaddingRight());
+                } else {
+                    for (TagItemView tiv : row.rowItems) tiv.mainView.setTag(tiv.isLaidOut = false);
+                }
+                rowTop += (row.rowHeight + attrMinItemToItemDistance);
+            }
+        }
+    }
+
+    private void layoutRow(RowModel row, int left, int top, int right) {
+        final int nChildren = row.rowItems.size();
+        int totContentW = 0;
+        for (TagItemView tiv : row.rowItems) totContentW += tiv.measuredW;
+
+        if (attrUseExtraSpace && (nChildren > 1)) {
+            int finItemSpace = Math.max(Math.round((float)(right - left - totContentW) / (nChildren - 1)), 0);
+
+            for (TagItemView tiv : row.rowItems) {
+                tiv.mainView.layout(left, top, left + tiv.measuredW, top + tiv.measuredH);
+                tiv.mainView.setTag(true);
+                tiv.isLaidOut = true;
+                left += finItemSpace;
+            }
+        } else if (attrItemsHorizontalGravity == Gravity.LEFT) {
+            //Do nothing here - start from the original 'left'
+
+
+        } else if (attrItemsHorizontalGravity == Gravity.RIGHT) {
+            //Define left start position for the RIGHT gravity
+            left = right - (totContentW + attrMinItemToItemDistance*(nChildren - 1));
+
+        } else if (attrItemsHorizontalGravity == Gravity.CENTER_HORIZONTAL) {
+            int dx = (right - left - (totContentW + attrMinItemToItemDistance*(nChildren - 1))) / 2;
+            if (dx > 0) left += dx;
+        } else {
+            throw new IllegalStateException("Unsupported items horizontal gravity - "+attrItemsHorizontalGravity);
+        }
+
+        for (TagItemView tiv : row.rowItems) {
+            tiv.mainView.layout(left, top, left + tiv.measuredW, top + tiv.measuredH);
+            tiv.mainView.setTag(true);
+            tiv.isLaidOut = true;
+            left += attrMinItemToItemDistance;
+        }
+    }
+
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        //--- Check if a child is ready to be drawn ---
+        Boolean tag = (Boolean) child.getTag();
+        if (tag == null) {
+            end_check:
+            for (RowModel row : mMeasuredRows) {
+                for (TagItemView tiv : row.rowItems) {
+                    if (tiv.mainView == child) {
+                        if (!tiv.isLaidOut) {
+                            return false;
+                        } else {
+                            break end_check;
+                        }
+                    }
+                }
+            }
+        } else if (!tag) {
+            return false;
+        }
+        return super.drawChild(canvas, child, drawingTime);
     }
 
     /**********************************************************************************************/
