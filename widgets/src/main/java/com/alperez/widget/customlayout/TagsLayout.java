@@ -39,6 +39,10 @@ public class TagsLayout extends FrameLayout {
     public static final int DEFAULT_TEXT_COLOR = Color.BLACK;
     public static final int DEFAULT_TEXT_STYLE = Typeface.NORMAL;
 
+    public interface OnTagClickListener {
+        void onTagClicked(ColoredCharSequence tag);
+    }
+
     /***************************  Control attributes  ********************************/
 
     //--- Layout-related attributes  ---
@@ -61,6 +65,7 @@ public class TagsLayout extends FrameLayout {
     private boolean attrUseDataItemsColor = true;
 
 
+    private OnTagClickListener onTagClickListener;
     private final LayoutInflater inflater;
 
 
@@ -134,6 +139,9 @@ public class TagsLayout extends FrameLayout {
     private final List<ColoredCharSequence> mData = new ArrayList<>();
     private final List<TagItemView> mTagItemViews = new LinkedList<>();
 
+    public void setOnTagClickListener(OnTagClickListener onTagClickListener) {
+        this.onTagClickListener = onTagClickListener;
+    }
 
     @Override
     public void setPadding(int left, int top, int right, int bottom) {
@@ -291,15 +299,18 @@ public class TagsLayout extends FrameLayout {
             } else {
                 this.mainView = mainView;
             }
-
-            originalBackground = mainView.getBackground().getConstantState().newDrawable().mutate();
-            workingBackground = mainView.getBackground().mutate();
-
             if (textView == null) {
                 throw new IllegalArgumentException("TextView is null");
             } else {
                 this.textView = textView;
             }
+
+            originalBackground = mainView.getBackground().getConstantState().newDrawable().mutate();
+            workingBackground = mainView.getBackground().mutate();
+
+            mainView.setOnClickListener(v -> {
+                if ((onTagClickListener != null) && (data != null)) onTagClickListener.onTagClicked(data);
+            });
         }
 
         void setData(ColoredCharSequence data) {
@@ -614,6 +625,5 @@ public class TagsLayout extends FrameLayout {
             ((TextView) v).setTextColor(color);
         }
     }
-
 
 }
