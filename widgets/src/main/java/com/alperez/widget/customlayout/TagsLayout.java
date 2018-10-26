@@ -44,6 +44,8 @@ public class TagsLayout extends FrameLayout {
     //--- Layout-related attributes  ---
     private int attrItemsHorizontalGravity = Gravity.LEFT;
     private int attrMinItemToItemDistance = 10;
+    private int attrMaxItemToItemDistance = 40;
+    private boolean attrUseMaxItemDistance;
     private boolean attrUseExtraSpace;
     private boolean attrAutoReorderItems;
 
@@ -109,7 +111,21 @@ public class TagsLayout extends FrameLayout {
         attrItemLayoutResId = a.getResourceId(R.styleable.TagsLayout_tl_itemLayoutResId, attrItemLayoutResId);
         attrTextViewResId = a.getResourceId(R.styleable.TagsLayout_tl_textViewResId, attrTextViewResId);
 
-        attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.TagsLayout_tl_item_distance, attrMinItemToItemDistance);
+        if (a.hasValue(R.styleable.TagsLayout_tl_min_item_distance) && !a.hasValue(R.styleable.TagsLayout_tl_max_item_distance_for_reordered)) {
+            attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.TagsLayout_tl_min_item_distance, 0);
+            attrUseMaxItemDistance = false;
+        } else if (a.hasValue(R.styleable.TagsLayout_tl_min_item_distance) && a.hasValue(R.styleable.TagsLayout_tl_max_item_distance_for_reordered)) {
+            attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.TagsLayout_tl_min_item_distance, 0);
+            attrMaxItemToItemDistance = a.getDimensionPixelSize(R.styleable.TagsLayout_tl_max_item_distance_for_reordered, 0);
+            if (3*attrMinItemToItemDistance > attrMaxItemToItemDistance) {
+                throw new IllegalStateException("The 'tl_max_item_distance_for_reordered' must be at least 3 times greater then the 'tl_min_item_distance'");
+            } else {
+                attrUseMaxItemDistance = true;
+            }
+        } else {
+            attrUseMaxItemDistance = false;
+        }
+
         attrUseExtraSpace = a.getBoolean(R.styleable.TagsLayout_tl_useExtraSpace, attrUseExtraSpace);
         attrAutoReorderItems = a.getBoolean(R.styleable.TagsLayout_tl_autoReorder, attrAutoReorderItems);
         a.recycle();
@@ -267,6 +283,7 @@ public class TagsLayout extends FrameLayout {
         boolean isMeasured;
         int measuredW, measuredH;
         private boolean isLaidOut;
+        private Drawable originalBackground, workingBackground;
 
         public TagItemView(View mainView, TextView textView) {
             if (mainView == null) {
@@ -274,6 +291,10 @@ public class TagsLayout extends FrameLayout {
             } else {
                 this.mainView = mainView;
             }
+
+            originalBackground = mainView.getBackground().getConstantState().newDrawable().mutate();
+            workingBackground = mainView.getBackground().mutate();
+
             if (textView == null) {
                 throw new IllegalArgumentException("TextView is null");
             } else {
@@ -285,7 +306,10 @@ public class TagsLayout extends FrameLayout {
             if ((this.data == null) || !this.data.equals(data)) {
                 textView.setText(this.data = data);
                 if (attrUseDataItemsColor && data.hasColor()) {
+                    if (mainView.getBackground() != workingBackground) mainView.setBackground(workingBackground);
                     setTextItemColor(mainView, data.color());
+                } else if (mainView.getBackground() != originalBackground) {
+                    mainView.setBackground(originalBackground);
                 }
                 invalidateMeasure();
             }
@@ -511,9 +535,21 @@ public class TagsLayout extends FrameLayout {
         int totContentW = 0;
         for (TagItemView tiv : row.rowItems) totContentW += tiv.measuredW;
 
-        int finItemSpace = attrMinItemToItemDistance;
+        int finItemSpace;
         if (attrUseExtraSpace && (nChildren > 1)) {
             finItemSpace = Math.max(Math.round((float)(right - left - totContentW) / (nChildren - 1)), 0);
+            if (attrAutoReorderItems && attrUseMaxItemDistance && (finItemSpace > attrMaxItemToItemDistance)) {
+                finItemSpace = attrMaxItemToItemDistance;
+                if (attrItemsHorizontalGravity == Gravity.LEFT) {
+                    // Leave 'left' as it is
+                } else if (attrItemsHorizontalGravity == Gravity.RIGHT) {
+                    //Define left start position for the RIGHT gravity
+                    left = right - (totContentW + finItemSpace*(nChildren - 1));
+                } else if (attrItemsHorizontalGravity == Gravity.CENTER_HORIZONTAL) {
+                    int dx = (right - left - (totContentW + finItemSpace*(nChildren - 1))) / 2;
+                    if (dx > 0) left += dx;
+                }
+            }
 
         } else if (attrItemsHorizontalGravity == Gravity.LEFT) {
             //Do nothing here - start from the original 'left'
@@ -521,10 +557,12 @@ public class TagsLayout extends FrameLayout {
 
         } else if (attrItemsHorizontalGravity == Gravity.RIGHT) {
             //Define left start position for the RIGHT gravity
-            left = right - (totContentW + attrMinItemToItemDistance*(nChildren - 1));
+            finItemSpace = attrMinItemToItemDistance;
+            left = right - (totContentW + finItemSpace*(nChildren - 1));
 
         } else if (attrItemsHorizontalGravity == Gravity.CENTER_HORIZONTAL) {
-            int dx = (right - left - (totContentW + attrMinItemToItemDistance*(nChildren - 1))) / 2;
+            finItemSpace = attrMinItemToItemDistance;
+            int dx = (right - left - (totContentW + finItemSpace*(nChildren - 1))) / 2;
             if (dx > 0) left += dx;
         } else {
             throw new IllegalStateException("Unsupported items horizontal gravity - "+attrItemsHorizontalGravity);
@@ -576,4 +614,6 @@ public class TagsLayout extends FrameLayout {
             ((TextView) v).setTextColor(color);
         }
     }
+
+
 }

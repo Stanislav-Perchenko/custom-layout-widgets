@@ -1,5 +1,6 @@
 package com.alperez.samples.demoactivity;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -126,7 +127,7 @@ public class TagsLayoutDemoActivity extends BaseDemoActivity {
                                      new TagModel("Lorem ipsum dolor sit", Color.parseColor("#e2e27a")),
                                      new TagModel("Lorem ipsum dolor sit amet", Color.parseColor("#56ffc3")),
                                      new TagModel("Donec ornare libero suscipit porttitor finibus. Sed mauris lectus,", Color.parseColor("#e2c479")),
-                                     new TagModel("Donec ut", Color.parseColor("#56ff83")),
+                                     new TagModel("Donec ut", null),
                                      new TagModel("Nulla aliquet volutpat", Color.parseColor("#e2a179")),
                                      new TagModel("Pellentesque tempor", Color.parseColor("#90f984")),
                                      new TagModel("Mi non", Color.parseColor("#ed82b2")),
@@ -149,6 +150,27 @@ public class TagsLayoutDemoActivity extends BaseDemoActivity {
             this.text = text;
             this.color = (color == null) ? 0 : color;
             this.hasColor = (color != null);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) return false;
+            if (o instanceof TagModel) {
+                TagModel other = (TagModel) o;
+                return this.text.equals(other.text) && areColorsEqual(this.color, other.color);
+            } else {
+                return false;
+            }
+        }
+
+        private boolean areColorsEqual(Integer c1, Integer c2) {
+            if (c1 == null && c2 == null) {
+                return true;
+            } else if ((c1 == null && c2 != null) || (c1 != null && c2 == null)) {
+                return false;
+            } else {
+                return c1.intValue() == c2.intValue();
+            }
         }
 
         @Override

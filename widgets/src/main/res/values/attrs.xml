@@ -7,7 +7,8 @@
         <attr name="tl_useDataItemsColor" format="boolean"/>
         <attr name="tl_fallbackItemColor" format="color"/>
 
-        <attr name="tl_item_distance" format="dimension"/>
+        <attr name="tl_min_item_distance" format="dimension"/>
+        <attr name="tl_max_item_distance_for_reordered" format="dimension"/>
         <attr name="tl_useExtraSpace" format="boolean"/>
         <attr name="tl_autoReorder" format="boolean"/>
     </declare-styleable>
