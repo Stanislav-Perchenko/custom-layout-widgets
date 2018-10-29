@@ -2,12 +2,14 @@ package com.alperez.widget.customlayout;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,24 +36,38 @@ public class CheckLayout extends FrameLayout {
     }
 
     public interface OnItemClickListener {
-        boolean onItemClicked(CheckableItem item);
+        boolean onItemClicked(CheckableTextItem item);
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when the checked state
+     * of a checkable item changed.
+     */
+    public interface OnCheckedChangeListener {
+        /**
+         * Called when the checked state of a checkable item has changed.
+         */
+        void onCheckedChanged(int index, CharSequence text, boolean isChecked);
     }
 
     //--- Layout-related attributes  ---
-    private int attrItemsHorizontalGravity = Gravity.LEFT;  //TODO Init this !!!!!!!!
-    private int attrMinItemToItemDistance = 10;             //TODO Init this !!!!!!!!
-    private boolean attrAutoReorderItems;                   //TODO Init this !!!!!!!!
-    private boolean attrAllocateFreeSpace;                  //TODO Init this !!!!!!!!
+    private int attrItemsHorizontalGravity = Gravity.LEFT;
+    private int attrMinItemToItemDistance = 10;
+    private boolean attrAutoReorderItems;
+    private boolean attrAllocateFreeSpace;
 
-    public boolean attrMultipleChoice;                      //TODO Init this !!!!!!!!
+    public boolean attrMultipleChoice;
 
 
 
     private final LayoutInflater inflater;
     private ItemViewBuilder mItemViewBuilder;
     private OnItemClickListener mItemClickListener;
+    private OnCheckedChangeListener onCheckedChangeListener;
 
-    private final List<CheckableItem> mData = new ArrayList<>();
+
+
+    private final List<CheckableTextItem> mData = new ArrayList<>();
     private final List<TagItemView> mTagItemViews = new LinkedList<>();
 
     public CheckLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -72,7 +88,23 @@ public class CheckLayout extends FrameLayout {
     }
 
     private void extractCustomAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        //TODO Implement this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        TypedArray a = getContext().obtainStyledAttributes(attrs, new int[]{android.R.attr.gravity}, defStyleAttr, defStyleRes);
+        if (a.hasValue(0)) {
+            int g = a.getInt(0,0);
+            if (g == Gravity.LEFT || g == Gravity.CENTER_HORIZONTAL || g == Gravity.RIGHT) {
+                attrItemsHorizontalGravity = g;
+            } else {
+                throw new IllegalStateException("Items gravity must be one of the LEFT, RIGHT, CENTER_HORIZONTAL");
+            }
+        }
+        a.recycle();
+
+        a = getContext().getResources().obtainAttributes(attrs, R.styleable.CheckLayout);
+        attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.CheckLayout_cl_min_item_distance, attrMinItemToItemDistance);
+        attrAutoReorderItems = a.getBoolean(R.styleable.CheckLayout_cl_autoReorder, attrAutoReorderItems);
+        attrAllocateFreeSpace = a.getBoolean(R.styleable.CheckLayout_cl_allocateFreeSpace, false);
+        attrMultipleChoice = a.getBoolean(R.styleable.CheckLayout_cl_multipleChoice, attrMultipleChoice);
+        a.recycle();
     }
 
     public void setItemViewBuilder(ItemViewBuilder vBuilder) {
@@ -81,6 +113,10 @@ public class CheckLayout extends FrameLayout {
 
     public void setOnItemClickListener(OnItemClickListener l) {
         this.mItemClickListener = l;
+    }
+
+    public void setOnCheckedChangeListener(OnCheckedChangeListener l) {
+        this.onCheckedChangeListener = l;
     }
 
     public void setUseAutoReorder(boolean useReorder) {
@@ -103,13 +139,12 @@ public class CheckLayout extends FrameLayout {
         }
     }
 
-    public void setItems(CheckableItem... tags) {
-        checkBuilder();
+    public void setItems(CharSequence... tags) {
         if (mData.size() == tags.length) {
             boolean eq = true;
             int i = 0;
-            for (Iterator<CheckableItem> itr = mData.iterator(); itr.hasNext(); i++) {
-                if (!itr.next().equals(tags[i])) {
+            for (Iterator<CheckableTextItem> itr = mData.iterator(); itr.hasNext(); i++) {
+                if (!TextUtils.equals(itr.next(), tags[i])) {
                     eq = false; break;
                 }
             }
@@ -117,17 +152,16 @@ public class CheckLayout extends FrameLayout {
         }
 
         mData.clear();
-        for (CheckableItem tag : tags) mData.add(tag);
+        for (int i=0; i<tags.length; i++) mData.add(new CheckableTextItem(tags[i], false, i));
         updateDataset();
     }
 
-    public void setItems(Collection<CheckableItem> tags) {
-        checkBuilder();
+    public void setItems(Collection<CharSequence> tags) {
         if (mData.size() == tags.size()) {
             boolean eq = true;
-            Iterator<? extends CheckableItem> itr2 = tags.iterator();
-            for (Iterator<CheckableItem> itr1 = mData.iterator(); itr1.hasNext();) {
-                if (!itr1.next().equals(itr2.next())) {
+            Iterator<? extends CharSequence> itr2 = tags.iterator();
+            for (Iterator<CheckableTextItem> itr1 = mData.iterator(); itr1.hasNext();) {
+                if (!TextUtils.equals(itr1.next(), itr2.next())) {
                     eq = false; break;
                 }
             }
@@ -135,7 +169,10 @@ public class CheckLayout extends FrameLayout {
         }
 
         mData.clear();
-        for (CheckableItem tag : tags) mData.add(tag);
+        int index = 0;
+        for (Iterator<CharSequence> itr = tags.iterator(); itr.hasNext(); index++) {
+            mData.add(new CheckableTextItem(itr.next(), false, index));
+        }
         updateDataset();
     }
 
@@ -148,7 +185,7 @@ public class CheckLayout extends FrameLayout {
 
     public void clearAllChecks() {
         ensureClickNotDispatching();
-        for (CheckableItem ci : mData) {
+        for (CheckableTextItem ci : mData) {
             if (ci.isChecked()) ci.toggle();
         }
         invalidate();
@@ -173,7 +210,7 @@ public class CheckLayout extends FrameLayout {
             for (int i : indexes) checks[i] = true;
 
             int pos = 0;
-            for (Iterator<CheckableItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
+            for (Iterator<CheckableTextItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
                 itr.next().setChecked(checks[pos]);
             }
             invalidate();
@@ -189,7 +226,7 @@ public class CheckLayout extends FrameLayout {
             for (int i : indexes) checks[i] = true;
 
             int pos = 0;
-            for (Iterator<CheckableItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
+            for (Iterator<CheckableTextItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
                 itr.next().setChecked(checks[pos]);
             }
             invalidate();
@@ -204,17 +241,14 @@ public class CheckLayout extends FrameLayout {
     private boolean isMeasurementInvalid;
 
 
-
-
     /************************ Data set section  ***************************************************/
-
-
     private void updateDataset() {
+        checkBuilder();
         TagItemView[] prepViewItems = new TagItemView[mData.size()];
 
         //Step 1. Look for already initialized items
         for (int i=0; i<prepViewItems.length; i++) {
-            CheckableItem tag = mData.get(i);
+            CheckableTextItem tag = mData.get(i);
             for (Iterator<TagItemView> itr = mTagItemViews.iterator(); itr.hasNext(); ) {
                 TagItemView iv = itr.next();
                 if (iv.data.equals(tag)) {
@@ -228,7 +262,7 @@ public class CheckLayout extends FrameLayout {
         //Step 2. Try to find or instantiate the rest items
         for (int i=0; i<prepViewItems.length; i++) {
             if (prepViewItems[i] == null) {
-                CheckableItem dataItem = mData.get(i);
+                CheckableTextItem dataItem = mData.get(i);
                 prepViewItems[i] = mTagItemViews.isEmpty() ? buildAndAddNewTagViewItem(dataItem) : mTagItemViews.remove(0);
                 prepViewItems[i].setData(dataItem);
             }
@@ -246,7 +280,7 @@ public class CheckLayout extends FrameLayout {
         requestLayout();
     }
 
-    private TagItemView buildAndAddNewTagViewItem(CheckableItem data) {
+    private TagItemView buildAndAddNewTagViewItem(CheckableTextItem data) {
         TextView vTxt = mItemViewBuilder.buildViewItem(inflater);
         if (vTxt == null) {
             throw new RuntimeException("Builder did not return TextView instance");
@@ -260,15 +294,15 @@ public class CheckLayout extends FrameLayout {
 
 
 
-    private class TagItemView implements CheckableItem.OnCheckedChangeListener {
+    private class TagItemView implements CheckableTextItem.OnCheckedChangeListener {
         final TextView mainView;
         final Checkable checker;
-        CheckableItem data;
+        CheckableTextItem data;
         boolean isMeasured;
         int measuredW, measuredH;
         private boolean isLaidOut;
 
-        public TagItemView(TextView mainView, Checkable checker, @Nullable CheckableItem data) {
+        public TagItemView(TextView mainView, Checkable checker, @Nullable CheckableTextItem data) {
             if (mainView == null) {
                 throw new IllegalArgumentException("Main View is null");
             } else {
@@ -281,7 +315,7 @@ public class CheckLayout extends FrameLayout {
             }
 
             mainView.setOnClickListener(v -> {
-                if (data != null) dispatchItemClick(data);
+                if (this.data != null) dispatchItemClick(this.data);
             });
 
             if (data != null) {
@@ -290,7 +324,7 @@ public class CheckLayout extends FrameLayout {
             }
         }
 
-        void setData(@NonNull CheckableItem data) {
+        void setData(@NonNull CheckableTextItem data) {
             boolean textChanged = (this.data == null) || !this.data.textEquals(data);
             boolean checkChanged= (this.data == null) || (checker.isChecked() != data.isChecked());
 
@@ -306,10 +340,12 @@ public class CheckLayout extends FrameLayout {
         }
 
         @Override
-        public void onCheckedChanged(CheckableItem item, boolean isChecked) {
+        public void onCheckedChanged(CheckableTextItem item, boolean isChecked) {
             if (this.data == item) {
                 checker.setChecked(isChecked);
-                //TODO pass item check changed to ext. listener !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                if (onCheckedChangeListener != null) {
+                    onCheckedChangeListener.onCheckedChanged(item.getId(), item, isChecked);
+                }
             }
         }
 
@@ -330,7 +366,7 @@ public class CheckLayout extends FrameLayout {
 
 
     private boolean dispatchingItemClick;
-    public final void dispatchItemClick(CheckableItem item) {
+    public final void dispatchItemClick(CheckableTextItem item) {
         dispatchingItemClick = true;
         try {
             if (mItemClickListener != null) {
@@ -340,7 +376,7 @@ public class CheckLayout extends FrameLayout {
             if (attrMultipleChoice) {
                 item.toggle();
             } else if (!item.isChecked()) {
-                for (CheckableItem cit : mData) {
+                for (CheckableTextItem cit : mData) {
                     if (cit.isChecked()) cit.toggle();
                     item.setChecked(true);
                 }
