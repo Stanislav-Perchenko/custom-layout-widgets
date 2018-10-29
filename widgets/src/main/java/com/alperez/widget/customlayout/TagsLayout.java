@@ -411,6 +411,7 @@ public class TagsLayout extends FrameLayout {
 
 
 
+
     private class RowModel {
         int rowHeight;
         final List<TagItemView> rowItems = new LinkedList<>();
@@ -530,24 +531,26 @@ public class TagsLayout extends FrameLayout {
             final int maxBottom = bottom - top - getPaddingBottom();
             final int rowStart = getPaddingLeft();
             final int rowEnd = right - left - getPaddingRight();
+            int rowPos = 1;
             for (RowModel row : mMeasuredRows) {
                 if ((rowTop + row.rowHeight) <= maxBottom) {
-                    layoutRow(row, rowStart, rowTop, rowEnd);
+                    layoutRow(row, rowStart, rowTop, rowEnd, (rowPos == mMeasuredRows.size()));
                 } else {
                     for (TagItemView tiv : row.rowItems) tiv.mainView.setTag(tiv.isLaidOut = false);
                 }
                 rowTop += (row.rowHeight + attrMinItemToItemDistance);
+                rowPos ++;
             }
         }
     }
 
-    private void layoutRow(RowModel row, int left, int top, int right) {
+    private void layoutRow(RowModel row, int left, int top, int right, boolean lastRow) {
         final int nChildren = row.rowItems.size();
         int totContentW = 0;
         for (TagItemView tiv : row.rowItems) totContentW += tiv.measuredW;
 
         int finItemSpace;
-        if (attrUseExtraSpace && (nChildren > 1)) {
+        if (attrUseExtraSpace && (nChildren > 1) && !lastRow) {
             finItemSpace = Math.max(Math.round((float)(right - left - totContentW) / (nChildren - 1)), 0);
             if (attrAutoReorderItems && attrUseMaxItemDistance && (finItemSpace > attrMaxItemToItemDistance)) {
                 finItemSpace = attrMaxItemToItemDistance;
