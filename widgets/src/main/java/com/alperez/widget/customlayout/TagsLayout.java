@@ -143,10 +143,6 @@ public class TagsLayout extends FrameLayout {
         this.onTagClickListener = onTagClickListener;
     }
 
-    @Override
-    public void setPadding(int left, int top, int right, int bottom) {
-        super.setPadding(left, top, right, bottom);
-    }
 
     public void setUseExtraSpace(boolean useExtSpace) {
         if (attrUseExtraSpace != useExtSpace) {
@@ -213,6 +209,14 @@ public class TagsLayout extends FrameLayout {
 
     private boolean isLayoutInvalid;
     private boolean isMeasurementInvalid;
+
+    @Override
+    public void requestLayout() {
+        isMeasurementInvalid = true;
+        isLayoutInvalid = true;
+        super.requestLayout();
+    }
+
     private void updateDataset() {
         TagItemView[] prepViewItems = new TagItemView[mData.size()];
 
@@ -249,12 +253,7 @@ public class TagsLayout extends FrameLayout {
         requestLayout();
     }
 
-    @Override
-    public void requestLayout() {
-        isMeasurementInvalid = true;
-        isLayoutInvalid = true;
-        super.requestLayout();
-    }
+
 
     private TagItemView buildAndAddNewTagViewItem() {
         TagItemView tiv;
