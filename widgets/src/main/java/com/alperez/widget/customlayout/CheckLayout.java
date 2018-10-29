@@ -15,8 +15,10 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,7 +27,7 @@ import java.util.List;
 public class CheckLayout extends FrameLayout {
 
     public interface ItemViewBuilder {
-        TextView buildViewItem(CharSequence contentText);
+        TextView buildViewItem(LayoutInflater inflater);
     }
 
     public interface OnItemClickListener {
@@ -33,12 +35,11 @@ public class CheckLayout extends FrameLayout {
     }
 
     //--- Layout-related attributes  ---
-    private int attrItemsHorizontalGravity = Gravity.LEFT;
-    private int attrMinItemToItemDistance = 10;
-    private boolean attrAutoReorderItems;
+    private int attrItemsHorizontalGravity = Gravity.LEFT;  //TODO Init this !!!!!!!!
+    private int attrMinItemToItemDistance = 10;             //TODO Init this !!!!!!!!
+    private boolean attrAutoReorderItems;                   //TODO Init this !!!!!!!!
 
-
-    public boolean attrMultipleChoice;      //TODO Init this !!!!!!!!
+    public boolean attrMultipleChoice;                      //TODO Init this !!!!!!!!
 
 
 
@@ -47,6 +48,7 @@ public class CheckLayout extends FrameLayout {
     private OnItemClickListener mItemClickListener;
 
     private final List<CheckableItem> mData = new ArrayList<>();
+    private final List<TagItemView> mTagItemViews = new LinkedList<>();
 
     public CheckLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
@@ -151,10 +153,52 @@ public class CheckLayout extends FrameLayout {
     }
 
     private void updateDataset() {
-        //TODO Implement this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        TagItemView[] prepViewItems = new TagItemView[mData.size()];
+
+        //Step 1. Look for already initialized items
+        for (int i=0; i<prepViewItems.length; i++) {
+            CheckableItem tag = mData.get(i);
+            for (Iterator<TagItemView> itr = mTagItemViews.iterator(); itr.hasNext(); ) {
+                TagItemView iv = itr.next();
+                if (iv.data.equals(tag)) {
+                    prepViewItems[i] = iv;
+                    itr.remove();
+                    break;
+                }
+            }
+        }
+
+        //Step 2. Try to find or instantiate the rest items
+        for (int i=0; i<prepViewItems.length; i++) {
+            if (prepViewItems[i] == null) {
+                CheckableItem dataItem = mData.get(i);
+                prepViewItems[i] = mTagItemViews.isEmpty() ? buildAndAddNewTagViewItem(dataItem) : mTagItemViews.remove(0);
+                prepViewItems[i].setData(dataItem);
+            }
+        }
+
+        //Step 3. If the new dataset size if less then the previous one, remove unnecessary views from container
+        if (!mTagItemViews.isEmpty()) {
+            for (TagItemView tiv : mTagItemViews) super.removeView(tiv.mainView);
+            mTagItemViews.clear();
+        }
+
+        //Step 4. Store updated ItemView set
+        mTagItemViews.addAll(Arrays.asList(prepViewItems));
+        invalidate();
+        requestLayout();
     }
 
-
+    private TagItemView buildAndAddNewTagViewItem(CheckableItem data) {
+        TextView vTxt = mItemViewBuilder.buildViewItem(inflater);
+        if (vTxt == null) {
+            throw new RuntimeException("Builder did not return TextView instance");
+        } else if (vTxt instanceof Checkable) {
+            return new TagItemView(vTxt, (Checkable) vTxt, data);
+        } else {
+            throw new RuntimeException("The returned TextView instance does not implement Checkable interface");
+        }
+    }
 
 
 
@@ -167,7 +211,7 @@ public class CheckLayout extends FrameLayout {
         int measuredW, measuredH;
         private boolean isLaidOut;
 
-        public TagItemView(TextView mainView, Checkable checker) {
+        public TagItemView(TextView mainView, Checkable checker, @Nullable CheckableItem data) {
             if (mainView == null) {
                 throw new IllegalArgumentException("Main View is null");
             } else {
@@ -182,6 +226,11 @@ public class CheckLayout extends FrameLayout {
             mainView.setOnClickListener(v -> {
                 if (data != null) dispatchItemClick(data);
             });
+
+            if (data != null) {
+                mainView.setText(this.data = data);
+                checker.setChecked(data.isChecked());
+            }
         }
 
         void setData(@NonNull CheckableItem data) {
