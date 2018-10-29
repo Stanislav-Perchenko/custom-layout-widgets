@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by stanislav.perchenko on 10/29/2018
@@ -141,6 +142,60 @@ public class CheckLayout extends FrameLayout {
         }
     }
 
+
+    public void clearAllChecks() {
+        ensureClickNotDispatching();
+        for (CheckableItem ci : mData) {
+            if (ci.isChecked()) ci.toggle();
+        }
+        invalidate();
+    }
+
+    public void setChecked(int index, boolean isChecked) {
+        ensureClickNotDispatching();
+        if (index < 0 || index >= mData.size()) {
+            throw new IndexOutOfBoundsException(String.format("Try access item %d. Total item number is %d", index, mData.size()));
+        } else {
+            mData.get(index).setChecked(isChecked);
+            invalidate();
+        }
+    }
+
+    public void setMultipleChecks(int... indexes) {
+        ensureClickNotDispatching();
+        if (!attrMultipleChoice) {
+            throw new IllegalStateException("Try to set multiple checks on the single-choice widget");
+        } else {
+            boolean[] checks = new boolean[mData.size()];
+            for (int i : indexes) checks[i] = true;
+
+            int pos = 0;
+            for (Iterator<CheckableItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
+                itr.next().setChecked(checks[pos]);
+            }
+            invalidate();
+        }
+    }
+
+    public void setMultipleChecks(Collection<Integer> indexes) {
+        ensureClickNotDispatching();
+        if (!attrMultipleChoice) {
+            throw new IllegalStateException("Try to set multiple checks on the single-choice widget");
+        } else {
+            boolean[] checks = new boolean[mData.size()];
+            for (int i : indexes) checks[i] = true;
+
+            int pos = 0;
+            for (Iterator<CheckableItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
+                itr.next().setChecked(checks[pos]);
+            }
+            invalidate();
+        }
+    }
+
+    private void ensureClickNotDispatching() {
+        if (dispatchingItemClick) throw new IllegalStateException("Checked state cannot be changed externally while item click is being dispatched");
+    }
 
     private boolean isLayoutInvalid;
     private boolean isMeasurementInvalid;
