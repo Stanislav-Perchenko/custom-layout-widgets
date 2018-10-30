@@ -369,7 +369,7 @@ public class TagsLayout extends FrameLayout {
             lastMeasuredContentWidth = containerW;
 
             //int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(contentW, View.MeasureSpec.AT_MOST);
-            int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(contentW, MeasureSpec.AT_MOST);
             int childHeightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 
             //Step 1: measure all children independently

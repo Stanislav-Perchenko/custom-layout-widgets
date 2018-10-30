@@ -104,6 +104,7 @@
             app:cl_min_item_distance="10dp"
             app:cl_allocateFreeSpace="false"
             app:cl_autoReorder="false"
+            app:cl_multipleChoice="false"
             android:background="#FFF"/>
 
     </LinearLayout>

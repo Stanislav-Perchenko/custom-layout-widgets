@@ -30,14 +30,14 @@ import java.util.List;
 /**
  * Created by stanislav.perchenko on 10/29/2018
  */
-public class CheckLayout extends FrameLayout {
+public class CheckLayout extends FrameLayout implements TextItemClickDispatcher {
 
     public interface ItemViewBuilder {
         TextView buildViewItem(LayoutInflater inflater, ViewGroup parent);
     }
 
     public interface OnItemClickListener {
-        boolean onItemClicked(CheckableTextItem item);
+        boolean onItemClicked(int position, CharSequence text);
     }
 
     /**
@@ -68,8 +68,9 @@ public class CheckLayout extends FrameLayout {
 
 
 
-    private final List<CheckableTextItem> mData = new ArrayList<>();
-    private final List<TagItemView> mTagItemViews = new LinkedList<>();
+    private final List<CharSequence> mData = new ArrayList<>();
+    private final List<CheckItemView> mTagItemViews = new LinkedList<>();
+    private final Deque<CheckItemView> mRecycledViewItems = new LinkedList<>();
 
     public CheckLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
@@ -152,7 +153,7 @@ public class CheckLayout extends FrameLayout {
         if (mData.size() == tags.length) {
             boolean eq = true;
             int i = 0;
-            for (Iterator<CheckableTextItem> itr = mData.iterator(); itr.hasNext(); i++) {
+            for (Iterator<CharSequence> itr = mData.iterator(); itr.hasNext(); i++) {
                 if (!TextUtils.equals(itr.next(), tags[i])) {
                     eq = false; break;
                 }
@@ -161,7 +162,7 @@ public class CheckLayout extends FrameLayout {
         }
 
         mData.clear();
-        for (int i=0; i<tags.length; i++) mData.add(new CheckableTextItem(tags[i], false, i));
+        for (int i=0; i<tags.length; i++) mData.add(tags[i]);
         updateDataset();
     }
 
@@ -169,7 +170,7 @@ public class CheckLayout extends FrameLayout {
         if (mData.size() == tags.size()) {
             boolean eq = true;
             Iterator<? extends CharSequence> itr2 = tags.iterator();
-            for (Iterator<CheckableTextItem> itr1 = mData.iterator(); itr1.hasNext();) {
+            for (Iterator<CharSequence> itr1 = mData.iterator(); itr1.hasNext();) {
                 if (!TextUtils.equals(itr1.next(), itr2.next())) {
                     eq = false; break;
                 }
@@ -178,10 +179,7 @@ public class CheckLayout extends FrameLayout {
         }
 
         mData.clear();
-        int index = 0;
-        for (Iterator<CharSequence> itr = tags.iterator(); itr.hasNext(); index++) {
-            mData.add(new CheckableTextItem(itr.next(), false, index));
-        }
+        mData.addAll(tags);
         updateDataset();
     }
 
@@ -194,10 +192,14 @@ public class CheckLayout extends FrameLayout {
 
     public void clearAllChecks() {
         ensureClickNotDispatching();
-        for (CheckableTextItem ci : mData) {
-            if (ci.isChecked()) ci.toggle();
+        boolean changed = false;
+        for (CheckItemView civ : mTagItemViews) {
+            if (civ.isChecked()) {
+                civ.toggle();
+                changed = true;
+            }
         }
-        invalidate();
+        if (changed) invalidate();
     }
 
     public void setChecked(int index, boolean isChecked) {
@@ -205,7 +207,19 @@ public class CheckLayout extends FrameLayout {
         if (index < 0 || index >= mData.size()) {
             throw new IndexOutOfBoundsException(String.format("Try access item %d. Total item number is %d", index, mData.size()));
         } else {
-            mData.get(index).setChecked(isChecked);
+            if (attrMultipleChoice) {
+                for (CheckItemView civ : mTagItemViews) {
+                    if (civ.getId() == index) civ.setChecked(isChecked);
+                }
+            } else {
+                for (CheckItemView civ : mTagItemViews) {
+                    if (civ.getId() == index) {
+                        civ.setChecked(isChecked);
+                    } else if (isChecked && civ.isChecked()) {
+                        civ.toggle();
+                    }
+                }
+            }
             invalidate();
         }
     }
@@ -219,7 +233,7 @@ public class CheckLayout extends FrameLayout {
             for (int i : indexes) checks[i] = true;
 
             int pos = 0;
-            for (Iterator<CheckableTextItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
+            for (Iterator<CheckItemView> itr = mTagItemViews.iterator(); itr.hasNext(); pos ++) {
                 itr.next().setChecked(checks[pos]);
             }
             invalidate();
@@ -235,7 +249,7 @@ public class CheckLayout extends FrameLayout {
             for (int i : indexes) checks[i] = true;
 
             int pos = 0;
-            for (Iterator<CheckableTextItem> itr = mData.iterator(); itr.hasNext(); pos ++) {
+            for (Iterator<CheckItemView> itr = mTagItemViews.iterator(); itr.hasNext(); pos ++) {
                 itr.next().setChecked(checks[pos]);
             }
             invalidate();
@@ -253,34 +267,44 @@ public class CheckLayout extends FrameLayout {
     /************************ Data set section  ***************************************************/
     private void updateDataset() {
         checkBuilder();
-        TagItemView[] prepViewItems = new TagItemView[mData.size()];
+        CheckItemView[] prepViewItems = new CheckItemView[mData.size()];
+
+        int nReadyItems = 0;
 
         //Step 1. Look for already initialized items
         for (int i=0; i<prepViewItems.length; i++) {
-            CheckableTextItem tag = mData.get(i);
-            for (Iterator<TagItemView> itr = mTagItemViews.iterator(); itr.hasNext(); ) {
-                TagItemView iv = itr.next();
-                if (iv.data.equals(tag)) {
+            CharSequence tag = mData.get(i);
+            for (Iterator<CheckItemView> itr = mTagItemViews.iterator(); itr.hasNext(); ) {
+                CheckItemView iv = itr.next();
+                if (TextUtils.equals(iv, tag)) {
                     prepViewItems[i] = iv;
+                    iv.setId(i);
+                    iv.setChecked(false);
                     itr.remove();
+                    nReadyItems ++;
                     break;
                 }
             }
         }
 
-        //Step 2. Try to find or instantiate the rest items
-        for (int i=0; i<prepViewItems.length; i++) {
-            if (prepViewItems[i] == null) {
-                CheckableTextItem dataItem = mData.get(i);
-                prepViewItems[i] = mTagItemViews.isEmpty() ? buildAndAddNewTagViewItem(dataItem) : mTagItemViews.remove(0);
-                prepViewItems[i].setData(dataItem);
+        //Step 2. Recycle not-used Views
+        if (mTagItemViews.size() > 0) {
+            for(CheckItemView civ : mTagItemViews) {
+                super.removeView(civ.mainView);
+                civ.setData(-1, null);
+                civ.invalidateMeasure();
             }
+            mTagItemViews.clear();
         }
 
-        //Step 3. If the new dataset size if less then the previous one, remove unnecessary views from container
-        if (!mTagItemViews.isEmpty()) {
-            for (TagItemView tiv : mTagItemViews) super.removeView(tiv.mainView);
-            mTagItemViews.clear();
+        //Step 3. Try to find or instantiate the rest items
+        if (nReadyItems < mData.size()) {
+            for (int i = 0; i < prepViewItems.length; i++) {
+                if (prepViewItems[i] == null) {
+                    CharSequence txt = mData.get(i);
+                    prepViewItems[i] = buildAndAddNewTagViewItem(i, txt, mRecycledViewItems);
+                }
+            }
         }
 
         //Step 4. Store updated ItemView set
@@ -289,109 +313,51 @@ public class CheckLayout extends FrameLayout {
         requestLayout();
     }
 
-    private TagItemView buildAndAddNewTagViewItem(CheckableTextItem data) {
-        TextView vTxt = mItemViewBuilder.buildViewItem(inflater, this);
-        if (vTxt == null) {
-            throw new RuntimeException("Builder did not return TextView instance");
-        } else if (vTxt instanceof Checkable) {
-            return new TagItemView(vTxt, (Checkable) vTxt, data);
+    private CheckItemView buildAndAddNewTagViewItem(int position, CharSequence text, Deque<CheckItemView> recycledItems) {
+        CheckItemView civ;
+        if (recycledItems.isEmpty()) {
+            TextView vTxt = mItemViewBuilder.buildViewItem(inflater, this);
+            if (vTxt == null) {
+                throw new RuntimeException("Builder did not return TextView instance");
+            } else if (vTxt instanceof Checkable) {
+                civ =  new CheckItemView(vTxt, (Checkable) vTxt, null);
+                civ.setItemClickDispatcher(this);
+            } else {
+                throw new RuntimeException("The returned TextView instance does not implement Checkable interface");
+            }
         } else {
-            throw new RuntimeException("The returned TextView instance does not implement Checkable interface");
+            civ = recycledItems.poll();
         }
+        civ.setData(position, text);
+        super.addView(civ.mainView);
+        return civ;
     }
 
-
-
-
-    private class TagItemView implements CheckableTextItem.OnCheckedChangeListener {
-        final TextView mainView;
-        final Checkable checker;
-        CheckableTextItem data;
-        boolean isMeasured;
-        int measuredW, measuredH;
-        private boolean isLaidOut;
-
-        public TagItemView(TextView mainView, Checkable checker, @Nullable CheckableTextItem data) {
-            if (mainView == null) {
-                throw new IllegalArgumentException("Main View is null");
-            } else {
-                this.mainView = mainView;
-            }
-            if (checker == null) {
-                throw new IllegalArgumentException("Checkable is null");
-            } else {
-                this.checker = checker;
-            }
-
-            mainView.setOnClickListener(v -> {
-                if (this.data != null) dispatchItemClick(this.data);
-            });
-
-            if (data != null) {
-                mainView.setText(this.data = data);
-                checker.setChecked(data.isChecked());
-            }
-        }
-
-        void setData(@NonNull CheckableTextItem data) {
-            boolean textChanged = (this.data == null) || !this.data.textEquals(data);
-            boolean checkChanged= (this.data == null) || (checker.isChecked() != data.isChecked());
-
-            if (this.data != null) this.data.setOnCheckedChangeListener(null);
-            (this.data = data).setOnCheckedChangeListener(this);
-
-            if (textChanged || checkChanged) {
-                if (textChanged) mainView.setText(data);
-                if (checkChanged) checker.toggle();
-                invalidateMeasure();
-            }
-
-        }
-
-        @Override
-        public void onCheckedChanged(CheckableTextItem item, boolean isChecked) {
-            if (this.data == item) {
-                checker.setChecked(isChecked);
-                if (onCheckedChangeListener != null) {
-                    onCheckedChangeListener.onCheckedChanged(item.getId(), item, isChecked);
-                }
-            }
-        }
-
-        void measure(int specW, int specH) {
-            mainView.measure(specW, specH);
-            measuredW = mainView.getMeasuredWidth();
-            measuredH = mainView.getMeasuredHeight();
-            isMeasured = true;
-        }
-
-        void invalidateMeasure() {
-            mainView.forceLayout();
-            isMeasured = false;
-            measuredW = 0;
-            measuredH = 0;
-        }
-    }
 
 
     private boolean dispatchingItemClick;
-    public final void dispatchItemClick(CheckableTextItem item) {
+    public final boolean dispatchItemClick(int id, CharSequence text) {
         dispatchingItemClick = true;
         try {
             if (mItemClickListener != null) {
-                if (!mItemClickListener.onItemClicked(item)) return;
+                if (!mItemClickListener.onItemClicked(id, text)) return false;
             }
 
             if (attrMultipleChoice) {
-                item.toggle();
-            } else if (!item.isChecked()) {
-                for (CheckableTextItem cit : mData) {
-                    if (cit.isChecked()) cit.toggle();
-                    item.setChecked(true);
+                for (CheckItemView civ : mTagItemViews) {
+                    if (civ.getId() == id) civ.toggle();
                 }
             } else {
-                // If single choice and item is checked -> do nothing
+                for (CheckItemView civ : mTagItemViews) {
+                    if (civ.getId() == id) {
+                        if (!civ.isChecked()) civ.toggle();
+                    } else if (civ.isChecked()) {
+                        civ.toggle();
+                    }
+                }
             }
+            invalidate();
+            return true;
         } finally {
             dispatchingItemClick = false;
         }
@@ -415,7 +381,7 @@ public class CheckLayout extends FrameLayout {
 
     private class RowModel {
         int rowHeight;
-        final List<TagItemView> rowItems = new LinkedList<>();
+        final List<CheckItemView> rowItems = new LinkedList<>();
     }
 
     private int lastMeasuredContentWidth = -1;
@@ -440,18 +406,18 @@ public class CheckLayout extends FrameLayout {
             lastMeasuredContentWidth = containerW;
 
             //int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(contentW, View.MeasureSpec.AT_MOST);
-            int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(contentW, MeasureSpec.AT_MOST);
             int childHeightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 
             //Step 1: measure all children independently
-            for (TagItemView tiv : mTagItemViews) tiv.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+            for (CheckItemView tiv : mTagItemViews) tiv.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
             //Step 2: Recycle all existing rows
             mRecycledRows.addAll(mMeasuredRows);
             mMeasuredRows.clear();
 
             //Step 3: Gather new rows
-            List<TagItemView> tmpItems = new LinkedList<>();
+            List<CheckItemView> tmpItems = new LinkedList<>();
             tmpItems.addAll(mTagItemViews);
             int totalContentH = 0;
             while (!tmpItems.isEmpty()) {
@@ -484,13 +450,13 @@ public class CheckLayout extends FrameLayout {
         setMeasuredDimension(lastMeasuredContentWidth, lastMeasuredContentHeight);
     }
 
-    private RowModel getRowNoReorder(List<TagItemView> input, int parentW, Deque<RowModel> convertRows) {
+    private RowModel getRowNoReorder(List<CheckItemView> input, int parentW, Deque<RowModel> convertRows) {
         RowModel rm = convertRows.isEmpty() ? new RowModel() : convertRows.pop();
         rm.rowItems.clear();
         rm.rowHeight = 0;
         int totW = 0;
-        for (Iterator<TagItemView> itr = input.iterator(); itr.hasNext(); ) {
-            TagItemView tiv = itr.next();
+        for (Iterator<CheckItemView> itr = input.iterator(); itr.hasNext(); ) {
+            CheckItemView tiv = itr.next();
             if (rm.rowItems.isEmpty()) {
                 rm.rowItems.add(tiv);
                 rm.rowHeight = tiv.measuredH;
@@ -508,17 +474,17 @@ public class CheckLayout extends FrameLayout {
         return rm;
     }
 
-    private TagItemView[] reorderWorkArray = new TagItemView[16];
-    private RowModel getRowWithReorder(List<TagItemView> input, int parentW, Deque<RowModel> convertRows) {
+    private CheckItemView[] reorderWorkArray = new CheckItemView[16];
+    private RowModel getRowWithReorder(List<CheckItemView> input, int parentW, Deque<RowModel> convertRows) {
 
         final int lengthEarlyThreshold = (int) Math.round(0.95 * parentW);
         final int N = input.size();
 
         if (reorderWorkArray.length < N) {
-            reorderWorkArray = new TagItemView[2*reorderWorkArray.length];
+            reorderWorkArray = new CheckItemView[2*reorderWorkArray.length];
         }
         int index = 0;
-        for (TagItemView tiv : input) reorderWorkArray[index ++] = tiv;
+        for (CheckItemView tiv : input) reorderWorkArray[index ++] = tiv;
 
         int storedWidthVariant = 0;
         int storedNSelected = 0;
@@ -566,7 +532,7 @@ public class CheckLayout extends FrameLayout {
         row.rowHeight = 0;
         for (int i=0; i<storedNSelected; i++) {
             int selIndex = storedIndexes[i];
-            TagItemView tiv = reorderWorkArray[selIndex];
+            CheckItemView tiv = reorderWorkArray[selIndex];
             row.rowItems.add(tiv);
             if (row.rowHeight < tiv.measuredH) row.rowHeight = tiv.measuredH;
             reorderWorkArray[selIndex] = null;
@@ -599,7 +565,7 @@ public class CheckLayout extends FrameLayout {
 
                 boolean desiredItemWDirty = false;
                 int pos = 0;
-                for (Iterator<TagItemView> itr = row.rowItems.iterator(); itr.hasNext(); pos ++) {
+                for (Iterator<CheckItemView> itr = row.rowItems.iterator(); itr.hasNext(); pos ++) {
                     final int itemW = itr.next().measuredW;
                     if (!remeasuredTracker[pos] && (itemW >= desiredItemW)) {
                         remeasuredTracker[pos] = true;
@@ -611,8 +577,8 @@ public class CheckLayout extends FrameLayout {
 
                 if (!desiredItemWDirty) {
                     // Now we are OK with current desired item width -> re-measure what's left
-                    for (Iterator<TagItemView> itr = row.rowItems.iterator(); itr.hasNext(); pos ++) {
-                        TagItemView tiv = itr.next();
+                    for (Iterator<CheckItemView> itr = row.rowItems.iterator(); itr.hasNext(); pos ++) {
+                        CheckItemView tiv = itr.next();
                         if (!remeasuredTracker[pos]) {
                             final int specW = View.MeasureSpec.makeMeasureSpec(desiredItemW, MeasureSpec.EXACTLY);
                             final int specH = View.MeasureSpec.makeMeasureSpec(tiv.measuredH, MeasureSpec.EXACTLY);
@@ -645,7 +611,7 @@ public class CheckLayout extends FrameLayout {
                 if ((rowTop + row.rowHeight) <= maxBottom) {
                     layoutRow(row, rowStart, rowTop, rowEnd, (rowPos == mMeasuredRows.size()));
                 } else {
-                    for (TagItemView tiv : row.rowItems) tiv.mainView.setTag(tiv.isLaidOut = false);
+                    for (CheckItemView tiv : row.rowItems) tiv.mainView.setTag(tiv.isLaidOut = false);
                 }
                 rowTop += (row.rowHeight + attrMinItemToItemDistance);
                 rowPos ++;
@@ -656,7 +622,7 @@ public class CheckLayout extends FrameLayout {
     private void layoutRow(RowModel row, int left, int top, int right, boolean lastRow) {
         final int nChildren = row.rowItems.size();
         int totContentW = 0;
-        for (TagItemView tiv : row.rowItems) totContentW += tiv.measuredW;
+        for (CheckItemView tiv : row.rowItems) totContentW += tiv.measuredW;
 
         if (attrAllocateFreeSpace || attrItemsHorizontalGravity == Gravity.LEFT) {
             //Do nothing here - start from the original 'left'
@@ -672,7 +638,7 @@ public class CheckLayout extends FrameLayout {
             throw new IllegalStateException("Unsupported items horizontal gravity - "+attrItemsHorizontalGravity);
         }
 
-        for (TagItemView tiv : row.rowItems) {
+        for (CheckItemView tiv : row.rowItems) {
             tiv.mainView.layout(left, top, left + tiv.measuredW, top + tiv.measuredH);
             tiv.mainView.setTag(true);
             tiv.isLaidOut = true;
@@ -688,7 +654,7 @@ public class CheckLayout extends FrameLayout {
         if (tag == null) {
             end_check:
             for (RowModel row : mMeasuredRows) {
-                for (TagItemView tiv : row.rowItems) {
+                for (CheckItemView tiv : row.rowItems) {
                     if (tiv.mainView == child) {
                         if (!tiv.isLaidOut) {
                             return false;
@@ -703,5 +669,4 @@ public class CheckLayout extends FrameLayout {
         }
         return super.drawChild(canvas, child, drawingTime);
     }
-
 }
