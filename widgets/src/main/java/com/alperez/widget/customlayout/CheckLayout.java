@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Checkable;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -32,7 +33,7 @@ import java.util.List;
 public class CheckLayout extends FrameLayout {
 
     public interface ItemViewBuilder {
-        TextView buildViewItem(LayoutInflater inflater);
+        TextView buildViewItem(LayoutInflater inflater, ViewGroup parent);
     }
 
     public interface OnItemClickListener {
@@ -122,6 +123,14 @@ public class CheckLayout extends FrameLayout {
     public void setUseAutoReorder(boolean useReorder) {
         if (attrAutoReorderItems != useReorder) {
             attrAutoReorderItems = useReorder;
+            invalidate();
+            requestLayout();
+        }
+    }
+
+    public void setAllocateFreeSpace(boolean useExtSpace) {
+        if (attrAllocateFreeSpace != useExtSpace) {
+            attrAllocateFreeSpace = useExtSpace;
             invalidate();
             requestLayout();
         }
@@ -281,7 +290,7 @@ public class CheckLayout extends FrameLayout {
     }
 
     private TagItemView buildAndAddNewTagViewItem(CheckableTextItem data) {
-        TextView vTxt = mItemViewBuilder.buildViewItem(inflater);
+        TextView vTxt = mItemViewBuilder.buildViewItem(inflater, this);
         if (vTxt == null) {
             throw new RuntimeException("Builder did not return TextView instance");
         } else if (vTxt instanceof Checkable) {

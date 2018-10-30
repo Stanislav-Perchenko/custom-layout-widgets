@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:maxLines="1"
+    android:ellipsize="end"
+    android:textStyle="bold"
+    android:textColor="@android:color/white"
+    android:textAlignment="center"
+    android:background="@drawable/bg_check_layout_item"
+    tools:text="Addiction #1"/>

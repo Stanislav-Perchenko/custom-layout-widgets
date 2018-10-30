@@ -22,7 +22,7 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
 
-        <activity android:name=".demoactivity.MyActivity"
+        <activity android:name=".demoactivity.CheckLayoutDemoActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
     </application>

@@ -3,7 +3,7 @@
     "title": "MultiChoiceView",
     "subtitle": "Multiple checkable items",
     "description": "A custom layout View which holds multiple named checkable items. The sungle- of multiple choice may be implemented. This View requires its content to be instantiated from code by setting a collection of item names. The actual item Views are built byan abstract builder asynchronously during measure-layout process. The the obtained item  Views are laid out in optimal way inside the container.",
-    "screenClassName": "com.alperez.samples.demoactivity.MyActivity"
+    "screenClassName": "com.alperez.samples.demoactivity.CheckLayoutDemoActivity"
   },{
     "title": "TagsLayout",
     "subtitle": "Layout to hold multiple tags",
