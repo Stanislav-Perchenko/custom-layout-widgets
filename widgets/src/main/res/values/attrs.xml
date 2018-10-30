@@ -13,10 +13,10 @@
         <attr name="tl_autoReorder" format="boolean"/>
     </declare-styleable>
 
-    <declare-styleable name="CheckLayout">
-        <attr name="cl_min_item_distance" format="dimension"/>
-        <attr name="cl_autoReorder" format="boolean"/>
-        <attr name="cl_allocateFreeSpace" format="boolean"/>
-        <attr name="cl_multipleChoice" format="boolean"/>
+    <declare-styleable name="CheckableTagsLayout">
+        <attr name="ctl_min_item_distance" format="dimension"/>
+        <attr name="ctl_autoReorder" format="boolean"/>
+        <attr name="ctl_allocateFreeSpace" format="boolean"/>
+        <attr name="ctl_multipleChoice" format="boolean"/>
     </declare-styleable>
 </resources>

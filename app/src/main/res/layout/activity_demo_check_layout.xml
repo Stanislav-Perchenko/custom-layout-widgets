@@ -104,15 +104,16 @@
                 android:layout_marginTop="4dp"
                 android:layout_gravity="center_horizontal"
                 android:text="Single choice"/>
-            <com.alperez.widget.customlayout.CheckLayout android:id="@+id/checks_1"
+            <com.alperez.widget.customlayout.CheckableTagsLayout
+                android:id="@+id/checks_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="left"
-                app:cl_min_item_distance="10dp"
-                app:cl_allocateFreeSpace="false"
-                app:cl_autoReorder="false"
-                app:cl_multipleChoice="false"
+                app:ctl_min_item_distance="10dp"
+                app:ctl_allocateFreeSpace="false"
+                app:ctl_autoReorder="false"
+                app:ctl_multipleChoice="false"
                 android:background="#FFF"/>
 
 
@@ -127,15 +128,16 @@
                 android:layout_marginTop="4dp"
                 android:layout_gravity="center_horizontal"
                 android:text="Multiple choice"/>
-            <com.alperez.widget.customlayout.CheckLayout android:id="@+id/checks_2"
+            <com.alperez.widget.customlayout.CheckableTagsLayout
+                android:id="@+id/checks_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="left"
-                app:cl_min_item_distance="10dp"
-                app:cl_allocateFreeSpace="false"
-                app:cl_autoReorder="false"
-                app:cl_multipleChoice="true"
+                app:ctl_min_item_distance="10dp"
+                app:ctl_allocateFreeSpace="false"
+                app:ctl_autoReorder="false"
+                app:ctl_multipleChoice="true"
                 android:background="#FFF"/>
 
         </LinearLayout>

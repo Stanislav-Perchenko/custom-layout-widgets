@@ -12,14 +12,14 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.alperez.samples.R;
-import com.alperez.widget.customlayout.CheckLayout;
+import com.alperez.widget.customlayout.CheckableTagsLayout;
 
 /**
  * Created by stanislav.perchenko on 10/26/2018
  */
 public class CheckLayoutDemoActivity extends BaseDemoActivity {
 
-    private CheckLayout vTagsLayout1, vTagsLayout2;
+    private CheckableTagsLayout vTagsLayout1, vTagsLayout2;
 
     private boolean alternateDataset;
 
@@ -32,8 +32,8 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        vTagsLayout1 = (CheckLayout) findViewById(R.id.checks_1);
-        vTagsLayout2 = (CheckLayout) findViewById(R.id.checks_2);
+        vTagsLayout1 = (CheckableTagsLayout) findViewById(R.id.checks_1);
+        vTagsLayout2 = (CheckableTagsLayout) findViewById(R.id.checks_2);
         ((CompoundButton) findViewById(R.id.sw_use_padding)).setOnCheckedChangeListener(this::onUsePaddingChanged);
         ((CompoundButton) findViewById(R.id.sw_use_extra_space)).setOnCheckedChangeListener(this::onUseExtSpaceChanged);
         ((CompoundButton) findViewById(R.id.sw_auto_reorder)).setOnCheckedChangeListener(this::onUseAutoReorderChanged);
@@ -46,7 +46,7 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
         vTagsLayout2.setItems(data);
     }
 
-    private final CheckLayout.ItemViewBuilder itemBuilder = new CheckLayout.ItemViewBuilder() {
+    private final CheckableTagsLayout.ItemViewBuilder itemBuilder = new CheckableTagsLayout.ItemViewBuilder() {
         @Override
         public TextView buildViewItem(LayoutInflater inflater, ViewGroup parent) {
             return (TextView) inflater.inflate(R.layout.check_layout_item, parent, false);

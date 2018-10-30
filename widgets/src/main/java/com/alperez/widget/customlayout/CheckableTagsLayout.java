@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Created by stanislav.perchenko on 10/29/2018
  */
-public class CheckLayout extends FrameLayout implements TextItemClickDispatcher {
+public class CheckableTagsLayout extends FrameLayout implements TextItemClickDispatcher {
 
     public interface ItemViewBuilder {
         TextView buildViewItem(LayoutInflater inflater, ViewGroup parent);
@@ -72,18 +72,18 @@ public class CheckLayout extends FrameLayout implements TextItemClickDispatcher 
     private final List<CheckItemView> mTagItemViews = new LinkedList<>();
     private final Deque<CheckItemView> mRecycledViewItems = new LinkedList<>();
 
-    public CheckLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public CheckableTagsLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public CheckLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+    public CheckableTagsLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         inflater = LayoutInflater.from(context);
         extractCustomAttrs(attrs, defStyleAttr, 0);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public CheckLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, @StyleRes int defStyleRes) {
+    public CheckableTagsLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, @StyleRes int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         inflater = LayoutInflater.from(context);
         extractCustomAttrs(attrs, defStyleAttr, defStyleRes);
@@ -101,11 +101,11 @@ public class CheckLayout extends FrameLayout implements TextItemClickDispatcher 
         }
         a.recycle();
 
-        a = getContext().getResources().obtainAttributes(attrs, R.styleable.CheckLayout);
-        attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.CheckLayout_cl_min_item_distance, attrMinItemToItemDistance);
-        attrAutoReorderItems = a.getBoolean(R.styleable.CheckLayout_cl_autoReorder, attrAutoReorderItems);
-        attrAllocateFreeSpace = a.getBoolean(R.styleable.CheckLayout_cl_allocateFreeSpace, false);
-        attrMultipleChoice = a.getBoolean(R.styleable.CheckLayout_cl_multipleChoice, attrMultipleChoice);
+        a = getContext().getResources().obtainAttributes(attrs, R.styleable.CheckableTagsLayout);
+        attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.CheckableTagsLayout_ctl_min_item_distance, attrMinItemToItemDistance);
+        attrAutoReorderItems = a.getBoolean(R.styleable.CheckableTagsLayout_ctl_autoReorder, attrAutoReorderItems);
+        attrAllocateFreeSpace = a.getBoolean(R.styleable.CheckableTagsLayout_ctl_allocateFreeSpace, false);
+        attrMultipleChoice = a.getBoolean(R.styleable.CheckableTagsLayout_ctl_multipleChoice, attrMultipleChoice);
         a.recycle();
     }
 
