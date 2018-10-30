@@ -10,7 +10,7 @@
     android:maxLines="1"
     android:ellipsize="end"
     android:textStyle="bold"
-    android:textColor="@android:color/white"
+    android:textColor="@color/checkable_item_text_color"
     android:textAlignment="center"
     android:background="@drawable/bg_check_layout_item"
     tools:text="Addiction #1"/>

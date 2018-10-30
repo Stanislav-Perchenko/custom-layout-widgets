@@ -19,7 +19,7 @@ import com.alperez.widget.customlayout.CheckLayout;
  */
 public class CheckLayoutDemoActivity extends BaseDemoActivity {
 
-    private CheckLayout vTagsLayout1;
+    private CheckLayout vTagsLayout1, vTagsLayout2;
 
     private boolean alternateDataset;
 
@@ -33,31 +33,40 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         vTagsLayout1 = (CheckLayout) findViewById(R.id.checks_1);
+        vTagsLayout2 = (CheckLayout) findViewById(R.id.checks_2);
         ((CompoundButton) findViewById(R.id.sw_use_padding)).setOnCheckedChangeListener(this::onUsePaddingChanged);
         ((CompoundButton) findViewById(R.id.sw_use_extra_space)).setOnCheckedChangeListener(this::onUseExtSpaceChanged);
         ((CompoundButton) findViewById(R.id.sw_auto_reorder)).setOnCheckedChangeListener(this::onUseAutoReorderChanged);
         ((RadioGroup) findViewById(R.id.gravity_checker)).setOnCheckedChangeListener(this::onGravityChanged);
 
-        vTagsLayout1.setItemViewBuilder(new CheckLayout.ItemViewBuilder() {
-            @Override
-            public TextView buildViewItem(LayoutInflater inflater, ViewGroup parent) {
-                return (TextView) inflater.inflate(R.layout.check_layout_item, parent, false);
-            }
-        });
-        vTagsLayout1.setItems(getData(alternateDataset));
+        vTagsLayout1.setItemViewBuilder(itemBuilder);
+        vTagsLayout2.setItemViewBuilder(itemBuilder);
+        CharSequence[] data = getData(alternateDataset);
+        vTagsLayout1.setItems(data);
+        vTagsLayout2.setItems(data);
     }
+
+    private final CheckLayout.ItemViewBuilder itemBuilder = new CheckLayout.ItemViewBuilder() {
+        @Override
+        public TextView buildViewItem(LayoutInflater inflater, ViewGroup parent) {
+            return (TextView) inflater.inflate(R.layout.check_layout_item, parent, false);
+        }
+    };
 
     private void onUsePaddingChanged(CompoundButton v, boolean use) {
         int pad = use ? Math.round(12 * getResources().getDisplayMetrics().density) : 0;
         vTagsLayout1.setPadding(pad, pad, pad, pad);
+        vTagsLayout2.setPadding(pad, pad, pad, pad);
     }
 
     private void onUseExtSpaceChanged(CompoundButton v, boolean use) {
         vTagsLayout1.setAllocateFreeSpace(use);
+        vTagsLayout2.setAllocateFreeSpace(use);
     }
 
     private void onUseAutoReorderChanged(CompoundButton v, boolean reorder) {
         vTagsLayout1.setUseAutoReorder(reorder);
+        vTagsLayout2.setUseAutoReorder(reorder);
     }
 
     private void onGravityChanged(RadioGroup group, int checkedId) {
@@ -74,6 +83,7 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
                 break;
         }
         vTagsLayout1.setItemsHorizontalLayoutGravity(g);
+        vTagsLayout2.setItemsHorizontalLayoutGravity(g);
     }
 
     @Override
@@ -85,7 +95,9 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_action_refresh) {
-            vTagsLayout1.setItems(getData(alternateDataset = !alternateDataset));
+            CharSequence[] data = getData(alternateDataset = !alternateDataset);
+            vTagsLayout1.setItems(data);
+            vTagsLayout2.setItems(data);
             return true;
         } else {
             return super.onOptionsItemSelected(item);
