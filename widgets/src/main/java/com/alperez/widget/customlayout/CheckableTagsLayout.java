@@ -44,18 +44,26 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
      * Interface definition for a callback to be invoked when the checked state
      * of a checkable item changed.
      */
-    public interface OnCheckedChangeListener {
+    public interface OnCheckedChangeListener<T extends CharSequence> {
         /**
          * Called when the checked state of a checkable item has changed.
          */
-        void onCheckedChanged(int index, CharSequence text, boolean isChecked);
+        void onCheckedChanged(int index, T text, boolean isChecked);
     }
+
+    private static final int LAYOUT_MODE_NO_REORDER_WRAP_CONTENT = 0;
+    private static final int LAYOUT_MODE_NO_REORDER_MATCH_PARENT = 1;
+    private static final int LAYOUT_MODE_REORDER_WRAP_CONTENT    = 2;
+    private static final int LAYOUT_MODE_REORDER_MATCH_PARENT    = 3;
+    private static final int LAYOUT_MODE_NO_REORDER_EQUAL_WIDTH  = 4;
+
 
     //--- Layout-related attributes  ---
     private int attrItemsHorizontalGravity = Gravity.LEFT;
     private int attrMinItemToItemDistance = 10;
     private boolean attrAutoReorderItems;
     private boolean attrAllocateFreeSpace;
+    private boolean attrLayoutEqualWidth;
 
     public boolean attrMultipleChoice;
 
@@ -71,6 +79,19 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
     private final List<CharSequence> mData = new ArrayList<>();
     private final List<CheckItemView> mTagItemViews = new LinkedList<>();
     private final Deque<CheckItemView> mRecycledViewItems = new LinkedList<>();
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (enabled != isEnabled()) {
+            super.setEnabled(enabled);
+            for (CheckItemView civ : mTagItemViews) {
+                civ.mainView.setEnabled(enabled);
+            }
+            for (CheckItemView civ : mRecycledViewItems) {
+                civ.mainView.setEnabled(enabled);
+            }
+        }
+    }
 
     public CheckableTagsLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
@@ -103,9 +124,36 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
 
         a = getContext().getResources().obtainAttributes(attrs, R.styleable.CheckableTagsLayout);
         attrMinItemToItemDistance = a.getDimensionPixelSize(R.styleable.CheckableTagsLayout_ctl_min_item_distance, attrMinItemToItemDistance);
-        attrAutoReorderItems = a.getBoolean(R.styleable.CheckableTagsLayout_ctl_autoReorder, attrAutoReorderItems);
-        attrAllocateFreeSpace = a.getBoolean(R.styleable.CheckableTagsLayout_ctl_allocateFreeSpace, false);
         attrMultipleChoice = a.getBoolean(R.styleable.CheckableTagsLayout_ctl_multipleChoice, attrMultipleChoice);
+
+        final int layMode = a.getInt(R.styleable.CheckableTagsLayout_ctl_layoutMode, LAYOUT_MODE_NO_REORDER_WRAP_CONTENT);
+        switch (layMode) {
+            case LAYOUT_MODE_NO_REORDER_WRAP_CONTENT:
+                attrAutoReorderItems = false;
+                attrAllocateFreeSpace = false;
+                attrLayoutEqualWidth = false;
+                break;
+            case LAYOUT_MODE_NO_REORDER_MATCH_PARENT:
+                attrAutoReorderItems = false;
+                attrAllocateFreeSpace = true;
+                attrLayoutEqualWidth = false;
+                break;
+            case LAYOUT_MODE_REORDER_WRAP_CONTENT:
+                attrAutoReorderItems = true;
+                attrAllocateFreeSpace = false;
+                attrLayoutEqualWidth = false;
+                break;
+            case LAYOUT_MODE_REORDER_MATCH_PARENT:
+                attrAutoReorderItems = true;
+                attrAllocateFreeSpace = true;
+                attrLayoutEqualWidth = false;
+                break;
+            case LAYOUT_MODE_NO_REORDER_EQUAL_WIDTH:
+                attrAutoReorderItems = false;
+                attrAllocateFreeSpace = false;
+                attrLayoutEqualWidth = true;
+                break;
+        }
         a.recycle();
     }
 
@@ -132,6 +180,17 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
     public void setAllocateFreeSpace(boolean useExtSpace) {
         if (attrAllocateFreeSpace != useExtSpace) {
             attrAllocateFreeSpace = useExtSpace;
+            invalidate();
+            requestLayout();
+        }
+    }
+
+    public void setItemEqualWidth(boolean isEqualWidth) {
+        if (attrLayoutEqualWidth != isEqualWidth) {
+            if (attrLayoutEqualWidth = isEqualWidth) {
+                attrAllocateFreeSpace = false;
+                attrAutoReorderItems = false;
+            }
             invalidate();
             requestLayout();
         }
@@ -166,7 +225,7 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
         updateDataset();
     }
 
-    public void setItems(Collection<CharSequence> tags) {
+    public void setItems(Collection<? extends CharSequence> tags) {
         if (mData.size() == tags.size()) {
             boolean eq = true;
             Iterator<? extends CharSequence> itr2 = tags.iterator();
@@ -189,6 +248,13 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
         }
     }
 
+    public Collection<CharSequence> getCheckedItems() {
+        Collection<CharSequence> ret = new LinkedList<>();
+        for (CheckItemView civ : mTagItemViews) {
+            if (civ.isChecked() && civ.isHasData()) ret.add(civ.getText());
+        }
+        return ret;
+    }
 
     public void clearAllChecks() {
         ensureClickNotDispatching();
@@ -302,7 +368,7 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
             for (int i = 0; i < prepViewItems.length; i++) {
                 if (prepViewItems[i] == null) {
                     CharSequence txt = mData.get(i);
-                    prepViewItems[i] = buildAndAddNewTagViewItem(i, txt, mRecycledViewItems);
+                    prepViewItems[i] = buildAndAddNewTagViewItem(i, txt);
                 }
             }
         }
@@ -313,26 +379,34 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
         requestLayout();
     }
 
-    private CheckItemView buildAndAddNewTagViewItem(int position, CharSequence text, Deque<CheckItemView> recycledItems) {
+    private CheckItemView buildAndAddNewTagViewItem(int position, CharSequence text) {
         CheckItemView civ;
-        if (recycledItems.isEmpty()) {
+        if (mRecycledViewItems.isEmpty()) {
             TextView vTxt = mItemViewBuilder.buildViewItem(inflater, this);
             if (vTxt == null) {
                 throw new RuntimeException("Builder did not return TextView instance");
             } else if (vTxt instanceof Checkable) {
+                vTxt.setEnabled(isEnabled());
                 civ =  new CheckItemView(vTxt, (Checkable) vTxt, null);
+                civ.setCheckChangeListener(mItemCheckListener);
                 civ.setItemClickDispatcher(this);
             } else {
                 throw new RuntimeException("The returned TextView instance does not implement Checkable interface");
             }
         } else {
-            civ = recycledItems.poll();
+            civ = mRecycledViewItems.poll();
         }
         civ.setData(position, text);
         super.addView(civ.mainView);
         return civ;
     }
 
+    private final CheckItemView.CheckChangeListener mItemCheckListener = new CheckItemView.CheckChangeListener() {
+        @Override
+        public void onCheckChanged(CheckItemView iv) {
+            if (onCheckedChangeListener != null) onCheckedChangeListener.onCheckedChanged(iv.getId(), iv.getText(), iv.isChecked());
+        }
+    };
 
 
     private boolean dispatchingItemClick;
@@ -412,6 +486,23 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
             //Step 1: measure all children independently
             for (CheckItemView tiv : mTagItemViews) tiv.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
+            //Step 1-1: If equal width for all items is requested - re-measure all items with exact width
+            boolean useRowItemsEqual = false;
+            if (attrLayoutEqualWidth) {
+                int maxItemW = 0;
+                for (CheckItemView tiv : mTagItemViews) {
+                    if (maxItemW < tiv.measuredW) maxItemW = tiv.measuredW;
+                }
+
+
+                if (maxItemW > (contentW - attrMinItemToItemDistance)/2) {
+                    useRowItemsEqual = true;
+                } else {
+                    childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(maxItemW, MeasureSpec.EXACTLY);
+                    for (CheckItemView tiv : mTagItemViews) tiv.measure(childWidthMeasureSpec, View.MeasureSpec.makeMeasureSpec(tiv.measuredH, MeasureSpec.EXACTLY));
+                }
+            }
+
             //Step 2: Recycle all existing rows
             mRecycledRows.addAll(mMeasuredRows);
             mMeasuredRows.clear();
@@ -421,9 +512,9 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
             tmpItems.addAll(mTagItemViews);
             int totalContentH = 0;
             while (!tmpItems.isEmpty()) {
-                RowModel row = (attrAutoReorderItems && (tmpItems.size() < 16))
-                        ? getRowWithReorder(tmpItems, contentW, mRecycledRows)
-                        : getRowNoReorder(tmpItems, contentW, mRecycledRows);
+                RowModel row = useRowItemsEqual
+                        ? getRowWithEqualItems(tmpItems, contentW, mRecycledRows)
+                        : ((attrAutoReorderItems && (tmpItems.size() < 16))) ? getRowWithReorder(tmpItems, contentW, mRecycledRows) : getRowNoReorder(tmpItems, contentW, mRecycledRows);
                 mMeasuredRows.add(row);
                 totalContentH += row.rowHeight;
             }
@@ -448,6 +539,41 @@ public class CheckableTagsLayout extends FrameLayout implements TextItemClickDis
         }
 
         setMeasuredDimension(lastMeasuredContentWidth, lastMeasuredContentHeight);
+    }
+
+    private RowModel getRowWithEqualItems(List<CheckItemView> input, int parentW, Deque<RowModel> convertRows) {
+        RowModel rm = convertRows.isEmpty() ? new RowModel() : convertRows.pop();
+        rm.rowItems.clear();
+        rm.rowHeight = 0;
+        int nSelected = 0;
+        int rowItemW = 0;
+        for (Iterator<CheckItemView> itr = input.iterator(); itr.hasNext(); ) {
+            CheckItemView tiv = itr.next();
+            if (nSelected == 0) {
+                nSelected = 1;
+                rowItemW = tiv.measuredW;
+            } else {
+                int newIW = Math.max(rowItemW, tiv.measuredW);
+                int newNSel = nSelected + 1;
+                int newContW = newNSel*newIW + attrMinItemToItemDistance*(newNSel - 1);
+                if (newContW < parentW) {
+                    nSelected ++;
+                    rowItemW = newIW;
+                    continue;
+                } else {
+                    break;
+                }
+            }
+        }
+        int childWidthMeasureSpec = View.MeasureSpec.makeMeasureSpec(rowItemW, MeasureSpec.EXACTLY);
+        for (Iterator<CheckItemView> itr = input.iterator(); nSelected > 0; nSelected --) {
+            CheckItemView tiv = itr.next();
+            tiv.measure(childWidthMeasureSpec, View.MeasureSpec.makeMeasureSpec(tiv.measuredH, MeasureSpec.EXACTLY));
+            rm.rowItems.add(tiv);
+            rm.rowHeight = tiv.measuredH;
+            itr.remove();
+        }
+        return rm;
     }
 
     private RowModel getRowNoReorder(List<CheckItemView> input, int parentW, Deque<RowModel> convertRows) {

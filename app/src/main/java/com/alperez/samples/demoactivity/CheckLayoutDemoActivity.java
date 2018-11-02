@@ -20,6 +20,7 @@ import com.alperez.widget.customlayout.CheckableTagsLayout;
 public class CheckLayoutDemoActivity extends BaseDemoActivity {
 
     private CheckableTagsLayout vTagsLayout1, vTagsLayout2;
+    private CompoundButton swExtraSpace, swReorder;
 
     private boolean alternateDataset;
 
@@ -34,10 +35,12 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
         super.onPostCreate(savedInstanceState);
         vTagsLayout1 = (CheckableTagsLayout) findViewById(R.id.checks_1);
         vTagsLayout2 = (CheckableTagsLayout) findViewById(R.id.checks_2);
-        ((CompoundButton) findViewById(R.id.sw_use_padding)).setOnCheckedChangeListener(this::onUsePaddingChanged);
-        ((CompoundButton) findViewById(R.id.sw_use_extra_space)).setOnCheckedChangeListener(this::onUseExtSpaceChanged);
-        ((CompoundButton) findViewById(R.id.sw_auto_reorder)).setOnCheckedChangeListener(this::onUseAutoReorderChanged);
         ((RadioGroup) findViewById(R.id.gravity_checker)).setOnCheckedChangeListener(this::onGravityChanged);
+        ((CompoundButton) findViewById(R.id.sw_use_padding)).setOnCheckedChangeListener(this::onUsePaddingChanged);
+        (swExtraSpace = (CompoundButton) findViewById(R.id.sw_use_extra_space)).setOnCheckedChangeListener(this::onUseExtSpaceChanged);
+        (swReorder = (CompoundButton) findViewById(R.id.sw_auto_reorder)).setOnCheckedChangeListener(this::onUseAutoReorderChanged);
+        ((CompoundButton) findViewById(R.id.sw_equal_width)).setOnCheckedChangeListener(this::onUseEqualWidthChanged);
+
 
         vTagsLayout1.setItemViewBuilder(itemBuilder);
         vTagsLayout2.setItemViewBuilder(itemBuilder);
@@ -67,6 +70,24 @@ public class CheckLayoutDemoActivity extends BaseDemoActivity {
     private void onUseAutoReorderChanged(CompoundButton v, boolean reorder) {
         vTagsLayout1.setUseAutoReorder(reorder);
         vTagsLayout2.setUseAutoReorder(reorder);
+    }
+
+    private void onUseEqualWidthChanged(CompoundButton v, boolean isEqualW) {
+        if (isEqualW) {
+            swReorder.setOnCheckedChangeListener(null);
+            swReorder.setChecked(false);
+            swReorder.setEnabled(false);
+            swExtraSpace.setOnCheckedChangeListener(null);
+            swExtraSpace.setChecked(false);
+            swExtraSpace.setEnabled(false);
+        } else {
+            swReorder.setOnCheckedChangeListener(this::onUseAutoReorderChanged);
+            swReorder.setEnabled(true);
+            swExtraSpace.setOnCheckedChangeListener(this::onUseExtSpaceChanged);
+            swExtraSpace.setEnabled(true);
+        }
+        vTagsLayout1.setItemEqualWidth(isEqualW);
+        vTagsLayout2.setItemEqualWidth(isEqualW);
     }
 
     private void onGravityChanged(RadioGroup group, int checkedId) {

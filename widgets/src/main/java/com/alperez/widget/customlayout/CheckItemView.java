@@ -9,12 +9,18 @@ import android.widget.TextView;
  * Created by stanislav.perchenko on 10/30/2018
  */
 final class CheckItemView implements Checkable, CharSequence {
+
+    interface CheckChangeListener {
+        void onCheckChanged(CheckItemView itemView);
+    }
+
     private int id;
     private CharSequence text;
     final TextView mainView;
     private final Checkable checkView;
 
     private boolean hasData;
+    private CheckChangeListener checkChangeListener;
 
     boolean isMeasured;
     int measuredW, measuredH;
@@ -37,6 +43,10 @@ final class CheckItemView implements Checkable, CharSequence {
         }
 
         if (text != null) mainView.setText(this.text = text);
+    }
+
+    public void setCheckChangeListener(CheckChangeListener l) {
+        this.checkChangeListener = l;
     }
 
     public int getId() {
@@ -71,7 +81,10 @@ final class CheckItemView implements Checkable, CharSequence {
     /*********************************  Checkable  ************************************************/
     @Override
     public void setChecked(boolean checked) {
-        checkView.setChecked(checked);
+        if (checked != checkView.isChecked()) {
+            checkView.setChecked(checked);
+            if (checkChangeListener != null) checkChangeListener.onCheckChanged(this);
+        }
     }
 
     @Override
@@ -82,6 +95,7 @@ final class CheckItemView implements Checkable, CharSequence {
     @Override
     public void toggle() {
         checkView.toggle();
+        if (checkChangeListener != null) checkChangeListener.onCheckChanged(this);
     }
 
     /*********************************  CharSequence  *********************************************/

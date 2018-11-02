@@ -92,6 +92,11 @@
                 android:layout_marginTop="16dp"
                 android:text="Reorder items to optimize layout"/>
 
+            <Switch android:id="@+id/sw_equal_width"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Equals items width"/>
 
             <View
                 android:layout_width="match_parent"
@@ -104,16 +109,14 @@
                 android:layout_marginTop="4dp"
                 android:layout_gravity="center_horizontal"
                 android:text="Single choice"/>
-            <com.alperez.widget.customlayout.CheckableTagsLayout
-                android:id="@+id/checks_1"
+            <com.alperez.widget.customlayout.CheckableTagsLayout android:id="@+id/checks_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="left"
                 app:ctl_min_item_distance="10dp"
-                app:ctl_allocateFreeSpace="false"
-                app:ctl_autoReorder="false"
                 app:ctl_multipleChoice="false"
+                app:ctl_layoutMode="no_reorder_wrap_content"
                 android:background="#FFF"/>
 
 
@@ -128,15 +131,13 @@
                 android:layout_marginTop="4dp"
                 android:layout_gravity="center_horizontal"
                 android:text="Multiple choice"/>
-            <com.alperez.widget.customlayout.CheckableTagsLayout
-                android:id="@+id/checks_2"
+            <com.alperez.widget.customlayout.CheckableTagsLayout android:id="@+id/checks_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="left"
                 app:ctl_min_item_distance="10dp"
-                app:ctl_allocateFreeSpace="false"
-                app:ctl_autoReorder="false"
+                app:ctl_layoutMode="no_reorder_wrap_content"
                 app:ctl_multipleChoice="true"
                 android:background="#FFF"/>
 

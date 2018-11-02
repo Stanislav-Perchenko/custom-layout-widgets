@@ -15,8 +15,13 @@
 
     <declare-styleable name="CheckableTagsLayout">
         <attr name="ctl_min_item_distance" format="dimension"/>
-        <attr name="ctl_autoReorder" format="boolean"/>
-        <attr name="ctl_allocateFreeSpace" format="boolean"/>
         <attr name="ctl_multipleChoice" format="boolean"/>
+        <attr name="ctl_layoutMode" format="enum">
+            <enum name="no_reorder_wrap_content" value="0"/>
+            <enum name="no_reorder_match_parent" value="1"/>
+            <enum name="reorder_wrap_content"    value="2"/>
+            <enum name="reorder_match_parent"    value="3"/>
+            <enum name="no_reorder_equal_width"  value="4"/>
+        </attr>
     </declare-styleable>
 </resources>
