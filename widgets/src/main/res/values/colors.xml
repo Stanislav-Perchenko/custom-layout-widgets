@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- general text colors -->
+    <color name="text_black">#000000</color>
+    <color name="text_dark">#333333</color>
+    <color name="text_gray">#757575</color>
+    <color name="text_light_gray">#BCBCBC</color>
+    <color name="text_almost_white">#F1F1F1</color>
+    <color name="text_white">#FFFFFF</color>
+</resources>

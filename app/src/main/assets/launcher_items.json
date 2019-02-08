@@ -9,5 +9,10 @@
     "subtitle": "Layout to hold multiple tags",
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
     "screenClassName": "com.alperez.samples.demoactivity.TagsLayoutDemoActivity"
+  },{
+    "title": "ReadMoreTextView",
+    "subtitle": "TextView with \"read more\" support",
+    "description": "A custom TextView descend which shows requested \"Read Moere\" text as the ellipsize mark in case of an original text does not fit into the View dimensions. The ReadMoreTextView must have maxLines property geater 0. The \"Read More\" mark may be HTML and be clickable",
+    "screenClassName": "com.alperez.samples.demoactivity.ReadMoreDemoActivity"
   }
 ]

@@ -24,4 +24,22 @@
             <enum name="no_reorder_equal_width"  value="4"/>
         </attr>
     </declare-styleable>
+
+    <!--  EditablePropertyView  -->
+    <declare-styleable name="EditablePropertyView">
+        <attr name="isMandatory" format="boolean" />
+        <attr name="propertyName" format="string" />
+        <attr name="propertyIcon" format="reference" />
+        <attr name="validMarkIcon" format="reference" />
+        <attr name="mandatoryMarkColor" format="color" />
+        <attr name="valueTemplateRegex" format="string" />
+        <attr name="actionDrawable" format="reference"/>
+    </declare-styleable>
+
+    <!--  ReadMoreTextView  -->
+    <declare-styleable name="ReadMoreTextView">
+        <attr name="readMore_plain_text" format="string" />
+        <attr name="readMore_html_text" format="string" />
+        <attr name="readMore_clickable" format="boolean" />
+    </declare-styleable>
 </resources>
