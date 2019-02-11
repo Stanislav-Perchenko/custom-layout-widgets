@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CustomAnimationViews</string>
+    <string name="app_name">CustomLayoutWidgets</string>
 
     <string name="project_description">Custom views which implement their own layout procedure. These include both single views and layouts.</string>
 

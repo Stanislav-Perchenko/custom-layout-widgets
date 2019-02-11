@@ -38,8 +38,13 @@
 
     <!--  ReadMoreTextView  -->
     <declare-styleable name="ReadMoreTextView">
-        <attr name="readMore_plain_text" format="string" />
-        <attr name="readMore_html_text" format="string" />
+        <attr name="readMore_text" format="string" />
+        <attr name="readMore_textStyle" format="enum" >
+            <enum name="normal" value="0"/>
+            <enum name="bold" value="1"/>
+            <enum name="italic" value="2"/>
+        </attr>
+        <attr name="readMore_textColor" format="color" />
         <attr name="readMore_clickable" format="boolean" />
     </declare-styleable>
 </resources>
