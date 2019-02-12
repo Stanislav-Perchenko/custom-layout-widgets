@@ -46,5 +46,6 @@
         </attr>
         <attr name="readMore_textColor" format="color" />
         <attr name="readMore_clickable" format="boolean" />
+        <attr name="debugMode" format="boolean" />
     </declare-styleable>
 </resources>

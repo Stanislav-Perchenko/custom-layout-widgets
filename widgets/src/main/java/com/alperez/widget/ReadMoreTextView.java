@@ -64,6 +64,7 @@ public class ReadMoreTextView extends TextView {
         isReadMoreClickable = a.getBoolean(R.styleable.ReadMoreTextView_readMore_clickable, false);
         attrLoadMoreTextColor = a.getColor(R.styleable.ReadMoreTextView_readMore_textColor,0);
         attrLoadMoreTextStyle = a.getInt(R.styleable.ReadMoreTextView_readMore_textStyle,0);
+        attrDebugMode = a.getBoolean(R.styleable.ReadMoreTextView_debugMode, false);
         a.recycle();
     }
 
@@ -77,6 +78,7 @@ public class ReadMoreTextView extends TextView {
     private String mOriginalReadMore;
     private int attrLoadMoreTextColor;
     private int attrLoadMoreTextStyle;
+    private boolean attrDebugMode;
 
     private boolean isTextDirty;
     private boolean isReadMoreShowing;
@@ -169,7 +171,7 @@ public class ReadMoreTextView extends TextView {
             lastMeasureSpecH = heightMeasureSpec;
             isTextDirty = true;
             if (isReadMoreShowing) {
-                Log.e(getClass().getSimpleName(), "~~~> Size changed & \"Read More\" is being shown -> fall back to the original text and RETURN");
+                if (attrDebugMode) Log.e(getClass().getSimpleName(), "~~~> Size changed & \"Read More\" is being shown -> fall back to the original text and RETURN");
                 isReadMoreShowing = false;
                 finReadMore = null;
                 actualTextLengthReadMoreMode = 0;
@@ -186,7 +188,7 @@ public class ReadMoreTextView extends TextView {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        Log.e(getClass().getSimpleName(), String.format("---> onLayout() changed - %b: l=%d, t=%d, r=%d, b=%d", changed, left, top, right, bottom));
+        if (attrDebugMode) Log.e(getClass().getSimpleName(), String.format("---> onLayout() changed - %b: l=%d, t=%d, r=%d, b=%d", changed, left, top, right, bottom));
         super.onLayout(changed, left, top, right, bottom);
         if (changed) {
             isClickAreaMeasured = false;
@@ -221,13 +223,13 @@ public class ReadMoreTextView extends TextView {
                 });
                 isReadMoreShowing = true;
                 actualTextLengthReadMoreMode = finTextEnd;
-                Log.d(getClass().getSimpleName(), "     ---> Start showing \"Read More\". textLen = "+finTextEnd);
+                if (attrDebugMode) Log.d(getClass().getSimpleName(), "     ---> Start showing \"Read More\". textLen = "+finTextEnd);
             }
             isTextDirty = false;
 
         } else if (isReadMoreShowing && (layout.getEllipsisCount(lastLineIndex) > 0) && !changed) {
             int finTextEnd = (-- actualTextLengthReadMoreMode);
-            Log.d(getClass().getSimpleName(),"      <--- Ellipsize failed -> new textLength = "+finTextEnd);
+            if (attrDebugMode) Log.d(getClass().getSimpleName(),"      <--- Ellipsize failed -> new textLength = "+finTextEnd);
             String finTextAndMore = getText().toString().substring(0, finTextEnd) + finReadMore;
             Spannable spanText = new SpannableString(finTextAndMore);
             spanText.setSpan(new StyleSpan(attrLoadMoreTextStyle), finTextEnd + 1, finTextAndMore.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -249,9 +251,11 @@ public class ReadMoreTextView extends TextView {
             float lineRight = layout.getLineRight(lastLineIndex);
             int lineBot = layout.getLineBottom(lastLineIndex);
             int baseline = layout.getLineBaseline(lastLineIndex);
-            String text = String.format("topPadding=%d; botPadding=%d; W=%d, H=%d, lineW=%.1f, lineLeft=%.1f, lineTop=%d; lineRight=%.1f; lineBot=%d, baseline=%d",
-                    topPadding, botPadding, w, h, lineW, lineLeft, lineTop, lineRight, lineBot, baseline);
-            Log.d(getClass().getSimpleName(), "<--- Read more is being shown OK: "+text);
+            if (attrDebugMode) {
+                String text = String.format("topPadding=%d; botPadding=%d; W=%d, H=%d, lineW=%.1f, lineLeft=%.1f, lineTop=%d; lineRight=%.1f; lineBot=%d, baseline=%d",
+                        topPadding, botPadding, w, h, lineW, lineLeft, lineTop, lineRight, lineBot, baseline);
+                Log.d(getClass().getSimpleName(), "<--- Read more is being shown OK: " + text);
+            }
 
             final float totalLineRight = lineRight + getTotalPaddingLeft();
             mReadMoreClickArea.set(totalLineRight - mReadMoreWidth, lineTop + getTotalPaddingTop(), totalLineRight, lineBot + getTotalPaddingTop());
@@ -322,7 +326,7 @@ public class ReadMoreTextView extends TextView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (isReadMoreShowing) {
+        if (attrDebugMode && isReadMoreShowing) {
             dbgPaint.setColor(Color.GREEN);
             canvas.drawRect(mReadMoreClickAreaEx, dbgPaint);
             dbgPaint.setColor(Color.RED);
