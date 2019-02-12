@@ -2,7 +2,9 @@ package com.alperez.samples.demoactivity;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -22,7 +24,7 @@ public class ReadMoreDemoActivity extends BaseDemoActivity {
     }
 
     private CharSequence mReadMoreText;
-    private int marginLeft, marginRight;
+    private int marginTop, marginLeft, marginRight;
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
@@ -34,8 +36,25 @@ public class ReadMoreDemoActivity extends BaseDemoActivity {
         ((Switch) findViewById(R.id.size_switch)).setOnCheckedChangeListener((buttonView, isChecked) -> setViewMargin(isChecked ? 1 : 2));
 
         ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) vTxtReadMore.getLayoutParams();
+        marginTop   = mlp.topMargin;
         marginLeft  = mlp.leftMargin;
         marginRight = mlp.rightMargin;
+
+        ((SeekBar) findViewById(R.id.margin_seek)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.d("ReadMoreDemoActivity", "seek = " + progress);
+                ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) vTxtReadMore.getLayoutParams();
+                mlp.topMargin = marginTop * progress;
+                vTxtReadMore.setLayoutParams(mlp);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
+        });
     }
 
     private void setViewMargin(int scale) {
