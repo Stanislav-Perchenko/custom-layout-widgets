@@ -9,15 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        android:maxLines="3"
+        android:maxLines="4"
         android:textSize="16sp"
-        android:padding="6dp"
+        android:padding="8dp"
         android:background="#B5B5B5"
         android:textColor="#000"
         app:readMore_text="...read more"
         app:readMore_clickable="true"
         app:readMore_textColor="#4545E0"
-        app:readMore_textStyle="bold"
+        app:readMore_textStyle="normal"
         android:ellipsize="end"
         android:text="Tsdofjsdo fsd fiosdhf sdofhsdof dfgdhggdh fgdfg dfg df gdfgdfg dfbfgfg sdfhsdfsdf fgdfgghuihguhfuhgsdiofh8abcdefghijklmnopqrstuvwxyz dfgdfgh dfoghdfogh dfogh psfgipsdjfpjsdpf jsdpfjpsdjfpsdj fpsdjfpjsd pf"/>
 
