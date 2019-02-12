@@ -7,7 +7,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.alperez.samples.R;
-import com.alperez.widget.ReadMoreTextView;
+import com.alperez.widget.customlayout.ReadMoreTextView;
 
 /**
  * Created by stanislav.perchenko on 2/8/2019

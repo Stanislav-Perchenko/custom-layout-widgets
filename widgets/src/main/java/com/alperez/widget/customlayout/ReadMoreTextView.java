@@ -1,5 +1,6 @@
-package com.alperez.widget;
+package com.alperez.widget.customlayout;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -21,11 +22,10 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
-import com.alperez.widget.customlayout.R;
-
 /**
  * Created by stanislav.perchenko on 2/8/2019
  */
+@SuppressLint("AppCompatCustomView")
 public class ReadMoreTextView extends TextView {
 
     private float MIN_PREFERED_CLICK_AREA;
@@ -96,6 +96,10 @@ public class ReadMoreTextView extends TextView {
         this.onReadMoreClickListener = l;
     }
 
+    public boolean isReadMoreEnabled() {
+        return (mOriginalReadMore != null) && (mOriginalReadMore.length() > 0);
+    }
+
     public void setReadMoreText(@Nullable CharSequence rm) {
         if (!TextUtils.equals(rm, mOriginalReadMore)) {
             mOriginalReadMore = (rm == null) ? null : rm.toString();
@@ -106,6 +110,10 @@ public class ReadMoreTextView extends TextView {
                 isReadMoreTouchTracking = false;
                 finReadMore = null;
                 super.setText(mOrigText, (mOrigBuffType == null) ? BufferType.NORMAL : mOrigBuffType);
+                if (isReadMoreEnabled()) {
+                    requestLayout();
+                    invalidate();
+                }
             }
             isTextDirty = true;
             requestLayout();
@@ -125,6 +133,10 @@ public class ReadMoreTextView extends TextView {
                 isReadMoreTouchTracking = false;
                 finReadMore = null;
                 super.setText(mOrigText, (mOrigBuffType == null) ? BufferType.NORMAL : mOrigBuffType);
+                if (isReadMoreEnabled()) {
+                    requestLayout();
+                    invalidate();
+                }
             }
             isTextDirty = true;
         }
@@ -135,16 +147,21 @@ public class ReadMoreTextView extends TextView {
     @Override
     public void setText(CharSequence text, BufferType type) {
         isTextDirty = !TextUtils.equals(text, mOrigText) || (type != mOrigBuffType);
+        if (attrDebugMode) Log.d(getClass().getSimpleName(), String.format("setText(): dirty=%b - %s", isTextDirty, text));
         mOrigBuffType = type;
         mOrigText = text;
 
-        if (isTextDirty || isReadMoreShowing) {
+        if (isTextDirty /*|| isReadMoreShowing*/) {
             isReadMoreShowing = false;
             actualTextLengthReadMoreMode = 0;
             isClickAreaMeasured = false;
             isReadMoreTouchTracking = false;
             finReadMore = null;
             super.setText(text, type);
+            if (isReadMoreEnabled()) {
+                requestLayout();
+                invalidate();
+            }
         }
     }
 
@@ -197,7 +214,7 @@ public class ReadMoreTextView extends TextView {
 
         final Layout layout = getLayout();
         final int lastLineIndex = layout.getLineCount() - 1;
-        if (!TextUtils.isEmpty(mOriginalReadMore) && isTextDirty && !isReadMoreShowing) {
+        if (isReadMoreEnabled() && isTextDirty && !isReadMoreShowing) {
             if (layout.getEllipsisCount(lastLineIndex) > 0) {
                 final int contentWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
 

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.alperez.widget.ReadMoreTextView android:id="@+id/txt_read_more"
+    <com.alperez.widget.customlayout.ReadMoreTextView
+        android:id="@+id/txt_read_more"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
