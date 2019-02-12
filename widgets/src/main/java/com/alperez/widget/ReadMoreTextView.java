@@ -83,8 +83,10 @@ public class ReadMoreTextView extends TextView {
     private int actualTextLengthReadMoreMode;
     private String finReadMore;
     private float mReadMoreWidth;
+    private boolean isClickAreaMeasured;
     private final RectF mReadMoreClickArea = new RectF();
     private final RectF mReadMoreClickAreaEx = new RectF();
+    private boolean isReadMoreTouchTracking;
 
 
 
@@ -98,6 +100,8 @@ public class ReadMoreTextView extends TextView {
             if (isReadMoreShowing) {
                 isReadMoreShowing = false;
                 actualTextLengthReadMoreMode = 0;
+                isClickAreaMeasured = false;
+                isReadMoreTouchTracking = false;
                 finReadMore = null;
                 super.setText(mOrigText, (mOrigBuffType == null) ? BufferType.NORMAL : mOrigBuffType);
             }
@@ -115,6 +119,8 @@ public class ReadMoreTextView extends TextView {
             if (isReadMoreShowing) {
                 isReadMoreShowing = false;
                 actualTextLengthReadMoreMode = 0;
+                isClickAreaMeasured = false;
+                isReadMoreTouchTracking = false;
                 finReadMore = null;
                 super.setText(mOrigText, (mOrigBuffType == null) ? BufferType.NORMAL : mOrigBuffType);
             }
@@ -133,6 +139,8 @@ public class ReadMoreTextView extends TextView {
         if (isTextDirty || isReadMoreShowing) {
             isReadMoreShowing = false;
             actualTextLengthReadMoreMode = 0;
+            isClickAreaMeasured = false;
+            isReadMoreTouchTracking = false;
             finReadMore = null;
             super.setText(text, type);
         }
@@ -165,6 +173,8 @@ public class ReadMoreTextView extends TextView {
                 isReadMoreShowing = false;
                 finReadMore = null;
                 actualTextLengthReadMoreMode = 0;
+                isClickAreaMeasured = false;
+                isReadMoreTouchTracking = false;
                 super.setText(mOrigText, getOriginalBufferType());
                 requestLayout();
                 invalidate();
@@ -178,7 +188,10 @@ public class ReadMoreTextView extends TextView {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         Log.e(getClass().getSimpleName(), String.format("---> onLayout() changed - %b: l=%d, t=%d, r=%d, b=%d", changed, left, top, right, bottom));
         super.onLayout(changed, left, top, right, bottom);
-
+        if (changed) {
+            isClickAreaMeasured = false;
+            isReadMoreTouchTracking = false;
+        }
 
         final Layout layout = getLayout();
         final int lastLineIndex = layout.getLineCount() - 1;
@@ -256,9 +269,8 @@ public class ReadMoreTextView extends TextView {
                 dRight= Math.min((MIN_PREFERED_CLICK_AREA - clickW)/2f, right - left - mReadMoreClickArea.right);
             }
             mReadMoreClickAreaEx.set(mReadMoreClickArea.left - dLeft, mReadMoreClickArea.top - dTop, mReadMoreClickArea.right + dRight, mReadMoreClickArea.bottom + dBot);
-
+            isClickAreaMeasured = true;
         }
-
     }
 
 
@@ -266,7 +278,39 @@ public class ReadMoreTextView extends TextView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         Log.d(getClass().getSimpleName(), ev.toString());
-        return super.onTouchEvent(ev);
+        final boolean parentResult = super.onTouchEvent(ev);
+
+        final float x = ev.getX(0);
+        final float y = ev.getY(0);
+
+        boolean myResult = false;
+        if (!isReadMoreClickable || (onReadMoreClickListener == null)) {
+            myResult = false;
+        } else if (!isReadMoreTouchTracking && mReadMoreClickAreaEx.contains(x, y)) {
+            //Start tracking
+            myResult = isReadMoreTouchTracking = (ev.getAction() == MotionEvent.ACTION_DOWN) && (ev.getPointerCount() == 1);
+
+        } else if (isReadMoreTouchTracking) {
+            if (!mReadMoreClickAreaEx.contains(x, y) || (ev.getPointerCount() > 1)) {
+                // Stop tracking because of coordinates are outside
+                myResult = isReadMoreTouchTracking = false;
+            } else {
+                if (ev.getAction() == MotionEvent.ACTION_CANCEL || ev.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                    //Stop tracking because of wrong event
+                    myResult = isReadMoreTouchTracking = false;
+                } else if (ev.getAction() == MotionEvent.ACTION_UP) {
+                    //Stop tracking and click!
+                    myResult = true;
+                    isReadMoreTouchTracking = false;
+                    onReadMoreClickListener.onReadMore(this);
+                } else {
+                    //Continue tracking
+                    myResult = true;
+                }
+            }
+        }
+
+        return parentResult | myResult;
     }
 
 
@@ -275,6 +319,8 @@ public class ReadMoreTextView extends TextView {
         dbgPaint.setStyle(Paint.Style.STROKE);
         dbgPaint.setStrokeWidth(1);
     }
+
+
 
     @Override
     protected void onDraw(Canvas canvas) {
