@@ -277,7 +277,6 @@ public class ReadMoreTextView extends TextView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        Log.d(getClass().getSimpleName(), ev.toString());
         final boolean parentResult = super.onTouchEvent(ev);
 
         final float x = ev.getX(0);
@@ -319,8 +318,6 @@ public class ReadMoreTextView extends TextView {
         dbgPaint.setStyle(Paint.Style.STROKE);
         dbgPaint.setStrokeWidth(1);
     }
-
-
 
     @Override
     protected void onDraw(Canvas canvas) {
