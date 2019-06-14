@@ -29,5 +29,9 @@
         <activity android:name=".demoactivity.ReadMoreDemoActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
+
+        <activity android:name=".demoactivity.DiscreteSeekBarDemoActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>

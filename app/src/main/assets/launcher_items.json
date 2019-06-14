@@ -14,5 +14,10 @@
     "subtitle": "TextView with \"read more\" support",
     "description": "A custom TextView descend which shows requested \"Read Moere\" text as the ellipsize mark in case of an original text does not fit into the View dimensions. The ReadMoreTextView must have maxLines property geater 0. The \"Read More\" mark may be HTML and be clickable",
     "screenClassName": "com.alperez.samples.demoactivity.ReadMoreDemoActivity"
-  }
+  },{
+  "title": "DiscreteSeekBar",
+  "subtitle": "A SeekBar with discrete values",
+  "description": "This is a custom SeekBar which uses predefined set of integer values to select from. These values must be sorted out ascending. The currently selected value is displayed on the touchable picker",
+  "screenClassName": "com.alperez.samples.demoactivity.DiscreteSeekBarDemoActivity"
+}
 ]

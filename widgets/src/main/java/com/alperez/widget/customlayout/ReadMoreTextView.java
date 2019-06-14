@@ -123,9 +123,8 @@ public class ReadMoreTextView extends TextView {
 
     @Override
     public void setMaxLines(int maxLines) {
-        int oldLines = getMaxLines();
-        super.setMaxLines(maxLines);
-        if (getMaxLines() != oldLines) {
+        if (maxLines != getMaxLines()) {
+            super.setMaxLines(maxLines);
             if (isReadMoreShowing) {
                 isReadMoreShowing = false;
                 actualTextLengthReadMoreMode = 0;
@@ -146,7 +145,7 @@ public class ReadMoreTextView extends TextView {
     private CharSequence mOrigText;
     @Override
     public void setText(CharSequence text, BufferType type) {
-        isTextDirty = !TextUtils.equals(text, mOrigText) || (type != mOrigBuffType);
+        isTextDirty = isTextDirty || !TextUtils.equals(text, mOrigText) || (type != mOrigBuffType);
         if (attrDebugMode) Log.d(getClass().getSimpleName(), String.format("setText(): dirty=%b - %s", isTextDirty, text));
         mOrigBuffType = type;
         mOrigText = text;

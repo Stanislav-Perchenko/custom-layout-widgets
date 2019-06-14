@@ -25,17 +25,6 @@
         </attr>
     </declare-styleable>
 
-    <!--  EditablePropertyView  -->
-    <declare-styleable name="EditablePropertyView">
-        <attr name="isMandatory" format="boolean" />
-        <attr name="propertyName" format="string" />
-        <attr name="propertyIcon" format="reference" />
-        <attr name="validMarkIcon" format="reference" />
-        <attr name="mandatoryMarkColor" format="color" />
-        <attr name="valueTemplateRegex" format="string" />
-        <attr name="actionDrawable" format="reference"/>
-    </declare-styleable>
-
     <!--  ReadMoreTextView  -->
     <declare-styleable name="ReadMoreTextView">
         <attr name="readMore_text" format="string" />
@@ -48,4 +37,16 @@
         <attr name="readMore_clickable" format="boolean" />
         <attr name="debugMode" format="boolean" />
     </declare-styleable>
+
+    <!--  DiscreteSeekBar  -->
+    <declare-styleable name="DiscreteSeekBar">
+        <attr name="colorAxisPoint" format="color"/>
+        <attr name="colorUnselected" format="color"/>
+        <attr name="colorSelected" format="color"/>
+        <attr name="colorHighlighted" format="color"/>
+        <attr name="axisStrokeWidth" format="dimension"/>
+        <attr name="axisToMarkerSpace" format="dimension"/>
+        <attr name="setableManually" format="boolean" />
+    </declare-styleable>
+
 </resources>
