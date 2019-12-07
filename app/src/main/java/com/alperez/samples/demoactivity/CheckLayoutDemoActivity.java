@@ -1,7 +1,6 @@
 package com.alperez.samples.demoactivity;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import com.alperez.samples.R;
 import com.alperez.widget.customlayout.CheckableTagsLayout;

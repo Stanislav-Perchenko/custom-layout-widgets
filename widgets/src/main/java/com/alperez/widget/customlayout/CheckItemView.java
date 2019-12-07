@@ -1,9 +1,10 @@
 package com.alperez.widget.customlayout;
 
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.Checkable;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by stanislav.perchenko on 10/30/2018

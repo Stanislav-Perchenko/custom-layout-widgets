@@ -1,7 +1,8 @@
 package com.alperez.samples.demoactivity;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.alperez.samples.R;
 import com.alperez.widget.customlayout.DiscreteSeekBar;

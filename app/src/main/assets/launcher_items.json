@@ -19,5 +19,10 @@
   "subtitle": "A SeekBar with discrete values",
   "description": "This is a custom SeekBar which uses predefined set of integer values to select from. These values must be sorted out ascending. The currently selected value is displayed on the touchable picker",
   "screenClassName": "com.alperez.samples.demoactivity.DiscreteSeekBarDemoActivity"
+  },{
+  "title": "VerticalSeekBar",
+  "subtitle": "SeekBar in vertical dir.",
+  "description": "A coumple of seek bars in vervital diration. The 1-st one is the fully-custom view. The 2-d one is rotated standard widget.",
+  "screenClassName": "com.alperez.samples.demoactivity.VertSeekBarDemoActivity"
 }
 ]

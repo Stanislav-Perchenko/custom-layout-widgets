@@ -1,12 +1,13 @@
 package com.alperez.samples.demoactivity;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.alperez.samples.R;
 import com.alperez.widget.customlayout.ReadMoreTextView;

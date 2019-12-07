@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -21,6 +20,8 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by stanislav.perchenko on 2/8/2019

@@ -1,7 +1,8 @@
 package com.alperez.samples.launcher;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.google.auto.value.AutoValue;
 
