@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="14dp">
+        <com.alperez.widget.customlayout.PrepassListItemColorView android:id="@+id/color_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:colorWidth="6dp"
+            app:colorCorners="14dp"/>
+
+        <TextView android:id="@+id/txt_acron"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="17sp"
+            android:textColor="@color/text_light_gray"
+            tools:text="AR"/>
+
+        <View android:id="@+id/dot_view"
+            android:layout_width="3dp"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_prepass_dot"/>
+    </FrameLayout>
+
+
+</FrameLayout>

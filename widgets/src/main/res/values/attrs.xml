@@ -49,4 +49,9 @@
         <attr name="setableManually" format="boolean" />
     </declare-styleable>
 
+    <declare-styleable name="PrepassListItemColorView">
+        <attr name="colorWidth" format="dimension"/>
+        <attr name="colorCorners" format="dimension"/>
+    </declare-styleable>
+
 </resources>
