@@ -25,9 +25,14 @@
     "description": "A coumple of seek bars in vervital diration. The 1-st one is the fully-custom view. The 2-d one is rotated standard widget.",
     "screenClassName": "com.alperez.samples.demoactivity.VertSeekBarDemoActivity"
   },{
-  "title": "Colored Views",
-  "subtitle": "Drawing on Canvas",
-  "description": "An example of custom view directly inherited from the View. It does its layout and draw its content directly on Canvas using Path tool.",
-  "screenClassName": "com.alperez.samples.demoactivity.ColoredViewsActivity"
-}
+    "title": "Colored Views",
+    "subtitle": "Drawing on Canvas",
+    "description": "An example of custom view directly inherited from the View. It does its layout and draw its content directly on Canvas using Path tool.",
+    "screenClassName": "com.alperez.samples.demoactivity.ColoredViewsActivity"
+  },{
+    "title": "Rounded Corners Decoration",
+    "subtitle": "Overlay view for rounding corners",
+    "description": "This is a View which can be used as an overlay for other views (most of all - ImageView) to round their corners. Radius can be set independently for each corner. Color of the overlay can be set via XML property",
+    "screenClassName": "com.alperez.samples.demoactivity.RoundedCornersDecorationActivity"
+  }
 ]

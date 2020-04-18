@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,LockedOrientationActivity">
         <activity android:name=".launcher.LauncherActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >
@@ -41,6 +41,11 @@
             android:screenOrientation="portrait" />
 
         <activity android:name=".demoactivity.ColoredViewsActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" />
+
+
+        <activity android:name=".demoactivity.RoundedCornersDecorationActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
     </application>

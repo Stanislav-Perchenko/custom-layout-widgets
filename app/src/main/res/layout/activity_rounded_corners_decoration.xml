@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E0E0E0">
+
+    <FrameLayout
+        android:layout_width="597px"
+        android:layout_height="749px"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="64dp"
+        tools:ignore="PxUsage,UselessParent">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/test_girl"
+            tools:ignore="ContentDescription" />
+        <com.alperez.widget.customlayout.RoundedCornersDecorationView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cornerRadius="48dp"
+            app:fillColor="#E0E0E0"/>
+    </FrameLayout>
+
+</LinearLayout>

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr name="cornerRadius" format="dimension" />
+
+
     <declare-styleable name="TagsLayout">
         <attr name="tl_itemLayoutResId" format="reference"/>
         <attr name="tl_textViewResId" format="reference"/>
@@ -52,6 +55,16 @@
     <declare-styleable name="PrepassListItemColorView">
         <attr name="colorWidth" format="dimension"/>
         <attr name="colorCorners" format="dimension"/>
+    </declare-styleable>
+
+    <!--  RoundedCornersDecorationView  -->
+    <declare-styleable name="RoundedCornersDecorationView">
+        <attr name="cornerRadius" />
+        <attr name="cornerLeftTop" format="dimension" />
+        <attr name="cornerTopRight" format="dimension" />
+        <attr name="cornerRightBottom" format="dimension" />
+        <attr name="cornerBottomLeft" format="dimension" />
+        <attr name="fillColor" format="color" />
     </declare-styleable>
 
 </resources>
