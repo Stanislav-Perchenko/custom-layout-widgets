@@ -79,6 +79,46 @@ public class RoundedCornersDecorationView extends View {
         }
     }
 
+    public void setAllCorners(int radius) {
+        radiusLeftTop = radiusTopRight = radiusRightBottom = radiusBottomLeft = radius;
+        requestLayout();
+        invalidate();
+    }
+
+    public void setRadiusTopLeft(int radius) {
+        if (radiusLeftTop != radius) {
+            radiusLeftTop = radius;
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    public void setRadiusTopRight(int radius) {
+        if (radiusTopRight != radius) {
+            radiusTopRight = radius;
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    public void setRadiusBotRight(int radius) {
+        if (radiusRightBottom != radius) {
+            radiusRightBottom = radius;
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    public void setRadiusBotLeft(int radius) {
+        if (radiusBottomLeft != radius) {
+            radiusBottomLeft = radius;
+            requestLayout();
+            invalidate();
+        }
+    }
+
+
+
 
 
     private final RectF arcOval = new RectF();

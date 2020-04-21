@@ -3,6 +3,14 @@
 
     <string name="project_description">Custom views which implement their own layout procedure. These include both single views and layouts.</string>
 
-    <string name="empty"></string>
+    <string name="empty" />
     <string name="err_no_implementation">Implementation not found</string>
+
+    <string name="seek_all_corners">All corners</string>
+    <string name="seek_top_left">Top-Left</string>
+    <string name="seek_top_right">Top-Right</string>
+    <string name="seek_bot_right">Bot-Right</string>
+    <string name="seek_bot_left">Bot-Left</string>
+    <string name="seek_fill_color">Fill color</string>
+
 </resources>
