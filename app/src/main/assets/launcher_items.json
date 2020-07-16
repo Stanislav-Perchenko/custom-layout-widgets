@@ -34,5 +34,10 @@
     "subtitle": "Overlay view for rounding corners",
     "description": "This is a View which can be used as an overlay for other views (most of all - ImageView) to round their corners. Radius can be set independently for each corner. Color of the overlay can be set via XML property",
     "screenClassName": "com.alperez.samples.demoactivity.RoundedCornersDecorationActivity"
+  },{
+    "title": "LimitedStretchingItemHorizontalLayout",
+    "subtitle": "Limited Stretching Item Container",
+    "description": "This is a container View which acts mostly like horizontal LinearLayout. Each child must have wrap_content or exactly-defined horizontal dimension. For one of children the horizontal size is limited to a maximum value, which lets all other children after this one to be laid out inside the container.",
+    "screenClassName": "com.alperez.samples.demoactivity.LimitedStretchingItemHorizontalLayoutActivity"
   }
 ]

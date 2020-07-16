@@ -67,4 +67,9 @@
         <attr name="fillColor" format="color" />
     </declare-styleable>
 
+    <declare-styleable name="LimitedStretchingItemHorizontalLayout">
+        <attr name="limitedStratchingItemId" format="reference" />
+    </declare-styleable>
+
+
 </resources>

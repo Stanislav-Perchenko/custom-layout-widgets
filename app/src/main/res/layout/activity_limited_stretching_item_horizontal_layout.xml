@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D5D5D5">
+    <androidx.appcompat.widget.Toolbar android:id="@id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_weight="0"
+        android:theme="@style/ToolbarTheme"
+        style="@style/ToolbarStyle" />
+
+    <com.alperez.widget.customlayout.LimitedStretchingItemHorizontalLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        app:limitedStratchingItemId="@id/text1" >
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="centerInside"
+            android:layout_marginRight="6dp"
+            android:src="@drawable/test_girl"/>
+        <TextView android:id="@+id/text1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#000" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6sp"
+            android:textColor="#454545"
+            android:textSize="12sp"
+            android:text="Some label"/>
+    </com.alperez.widget.customlayout.LimitedStretchingItemHorizontalLayout>
+
+    <com.alperez.widget.customlayout.LimitedStretchingItemHorizontalLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        app:limitedStratchingItemId="@id/text2" >
+
+        <TextView android:id="@+id/text2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#000" />
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="centerInside"
+            android:layout_marginLeft="6dp"
+            android:src="@drawable/test_girl"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6sp"
+            android:textColor="#454545"
+            android:textSize="12sp"
+            android:text="Some label"/>
+    </com.alperez.widget.customlayout.LimitedStretchingItemHorizontalLayout>
+
+    <EditText android:id="@+id/edit1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"/>
+
+</LinearLayout>
